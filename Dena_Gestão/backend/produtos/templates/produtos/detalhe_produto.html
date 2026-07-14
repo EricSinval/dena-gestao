@@ -174,6 +174,13 @@
                     Tamanhos, cores, modelos e quantidades em estoque.
                 </p>
             </div>
+
+            <a
+                href="{% url 'produtos:cadastrar_variacao' produto.id %}"
+                class="botao botao-principal"
+            >
+                + Nova variação
+            </a>
         </div>
 
         {% if variacoes %}
@@ -189,6 +196,7 @@
                             <th>Estoque mínimo</th>
                             <th>Situação</th>
                             <th>Status</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
 
@@ -240,6 +248,43 @@
                                         </span>
                                     {% endif %}
                                 </td>
+
+                                <td>
+                                    <div class="acoes-tabela">
+                                        <a
+                                            href="{% url 'produtos:editar_variacao' variacao.id %}"
+                                            class="link-acao"
+                                        >
+                                            Editar
+                                        </a>
+
+                                        <form
+                                            method="post"
+                                            action="{% url 'produtos:alterar_status_variacao' variacao.id %}"
+                                            class="formulario-inline"
+                                        >
+                                            {% csrf_token %}
+
+                                            {% if variacao.ativo %}
+                                                <button
+                                                    type="submit"
+                                                    class="link-acao botao-link botao-link-perigo"
+                                                    onclick="return confirm('Deseja inativar esta variação?');"
+                                                >
+                                                    Inativar
+                                                </button>
+                                            {% else %}
+                                                <button
+                                                    type="submit"
+                                                    class="link-acao botao-link botao-link-sucesso"
+                                                    onclick="return confirm('Deseja reativar esta variação?');"
+                                                >
+                                                    Reativar
+                                                </button>
+                                            {% endif %}
+                                        </form>
+                                    </div>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -250,14 +295,14 @@
                 <h3>Nenhuma variação cadastrada</h3>
 
                 <p>
-                    As variações ainda podem ser cadastradas pelo painel administrativo.
+                    Cadastre a primeira variação deste produto.
                 </p>
 
                 <a
-                    href="/admin/produtos/variacaoproduto/add/"
-                    class="botao botao-secundario"
+                    href="{% url 'produtos:cadastrar_variacao' produto.id %}"
+                    class="botao botao-principal"
                 >
-                    Cadastrar variação no Admin
+                    Cadastrar primeira variação
                 </a>
             </div>
         {% endif %}

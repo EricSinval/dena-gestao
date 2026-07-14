@@ -31,4 +31,19 @@ urlpatterns = [
         views.alterar_status_produto,
         name="alterar_status_produto",
     ),
+    path(
+        "<int:produto_id>/variacoes/cadastrar/",
+        views.cadastrar_variacao,
+        name="cadastrar_variacao",
+    ),
+    path(
+        "variacoes/<int:variacao_id>/editar/",
+        views.editar_variacao,
+        name="editar_variacao",
+    ),
+    path(
+        "variacoes/<int:variacao_id>/alterar-status/",
+        views.alterar_status_variacao,
+        name="alterar_status_variacao",
+    ),
 ]

@@ -1,0 +1,95 @@
+{% extends "produtos/base.html" %}
+
+{% block title %}
+    {{ titulo }} | Dena Gestão
+{% endblock %}
+
+{% block content %}
+    <section class="titulo-pagina">
+        <div>
+            <a
+                href="{% url 'produtos:detalhe_produto' produto.id %}"
+                class="link-voltar"
+            >
+                ← Voltar para {{ produto.nome }}
+            </a>
+
+            <h1>{{ titulo }}</h1>
+
+            <p>
+                Produto: <strong>{{ produto.nome }}</strong>
+            </p>
+        </div>
+    </section>
+
+    <section class="card formulario-card">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if formulario.non_field_errors %}
+                <div class="mensagem mensagem-error">
+                    {% for erro in formulario.non_field_errors %}
+                        <p>{{ erro }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="formulario-grid">
+                {% for campo in formulario %}
+                    <div
+                        class="campo
+                        {% if campo.field.widget.input_type == 'checkbox' %}
+                            campo-checkbox
+                        {% endif %}
+                        "
+                    >
+                        {% if campo.field.widget.input_type == "checkbox" %}
+                            <label class="checkbox-label">
+                                {{ campo }}
+                                {{ campo.label }}
+                            </label>
+                        {% else %}
+                            <label for="{{ campo.id_for_label }}">
+                                {{ campo.label }}
+
+                                {% if campo.field.required %}
+                                    <span class="obrigatorio">*</span>
+                                {% endif %}
+                            </label>
+
+                            {{ campo }}
+                        {% endif %}
+
+                        {% if campo.help_text %}
+                            <small class="ajuda">
+                                {{ campo.help_text }}
+                            </small>
+                        {% endif %}
+
+                        {% for erro in campo.errors %}
+                            <small class="erro">
+                                {{ erro }}
+                            </small>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="formulario-acoes">
+                <a
+                    href="{% url 'produtos:detalhe_produto' produto.id %}"
+                    class="botao botao-secundario"
+                >
+                    Cancelar
+                </a>
+
+                <button
+                    type="submit"
+                    class="botao botao-principal"
+                >
+                    {{ texto_botao }}
+                </button>
+            </div>
+        </form>
+    </section>
+{% endblock %}

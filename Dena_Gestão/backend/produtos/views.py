@@ -3,8 +3,8 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from .forms import ProdutoForm
-from .models import Categoria, Produto
+from .forms import ProdutoForm, VariacaoProdutoForm
+from .models import Categoria, Produto, VariacaoProduto
 
 
 def lista_produtos(request):
@@ -67,9 +67,9 @@ def cadastrar_produto(request):
         formulario = ProdutoForm()
 
     contexto = {
-    "formulario": formulario,
-    "titulo": "Cadastrar produto",
-    "texto_botao": "Salvar produto",
+        "formulario": formulario,
+        "titulo": "Cadastrar produto",
+        "texto_botao": "Salvar produto",
     }
 
     return render(
@@ -88,8 +88,12 @@ def detalhe_produto(request, produto_id):
     )
 
     contexto = {
-        "produto": produto,
-        "variacoes": produto.variacoes.all(),
+            "produto": produto,
+            "variacoes": produto.variacoes.order_by(
+            "cor",
+            "tamanho",
+            "modelo",
+        ),
     }
 
     return render(
@@ -152,6 +156,7 @@ def alterar_status_produto(request, produto_id):
     )
 
     produto.ativo = not produto.ativo
+
     produto.save(
         update_fields=[
             "ativo",
@@ -172,4 +177,148 @@ def alterar_status_produto(request, produto_id):
     return redirect(
         "produtos:detalhe_produto",
         produto_id=produto.id,
+    )
+
+
+def cadastrar_variacao(request, produto_id):
+    produto = get_object_or_404(
+        Produto,
+        id=produto_id,
+    )
+
+    if request.method == "POST":
+        formulario = VariacaoProdutoForm(
+            request.POST,
+        )
+
+        if formulario.is_valid():
+            dados = formulario.cleaned_data
+
+            variacao_existente = VariacaoProduto.objects.filter(
+                produto=produto,
+                tamanho__iexact=dados["tamanho"],
+                cor__iexact=dados["cor"],
+                modelo__iexact=dados["modelo"],
+            ).exists()
+
+            if variacao_existente:
+                formulario.add_error(
+                    None,
+                    (
+                        "Já existe uma variação deste produto "
+                        "com o mesmo tamanho, cor e modelo."
+                    ),
+                )
+            else:
+                variacao = formulario.save(commit=False)
+                variacao.produto = produto
+                variacao.save()
+
+                messages.success(
+                    request,
+                    (
+                        f'A variação "{variacao}" '
+                        "foi cadastrada com sucesso."
+                    ),
+                )
+
+                return redirect(
+                    "produtos:detalhe_produto",
+                    produto_id=produto.id,
+                )
+
+    else:
+        formulario = VariacaoProdutoForm()
+
+    contexto = {
+        "formulario": formulario,
+        "produto": produto,
+        "titulo": "Cadastrar variação",
+        "texto_botao": "Salvar variação",
+    }
+
+    return render(
+        request,
+        "produtos/formulario_variacao.html",
+        contexto,
+    )
+
+
+def editar_variacao(request, variacao_id):
+    variacao = get_object_or_404(
+        VariacaoProduto.objects.select_related("produto"),
+        id=variacao_id,
+    )
+
+    if request.method == "POST":
+        formulario = VariacaoProdutoForm(
+            request.POST,
+            instance=variacao,
+        )
+
+        if formulario.is_valid():
+            variacao = formulario.save()
+
+            messages.success(
+                request,
+                (
+                    f'A variação "{variacao}" '
+                    "foi atualizada com sucesso."
+                ),
+            )
+
+            return redirect(
+                "produtos:detalhe_produto",
+                produto_id=variacao.produto.id,
+            )
+
+    else:
+        formulario = VariacaoProdutoForm(
+            instance=variacao,
+        )
+
+    contexto = {
+        "formulario": formulario,
+        "produto": variacao.produto,
+        "variacao": variacao,
+        "titulo": "Editar variação",
+        "texto_botao": "Salvar alterações",
+    }
+
+    return render(
+        request,
+        "produtos/formulario_variacao.html",
+        contexto,
+    )
+
+
+@require_POST
+def alterar_status_variacao(request, variacao_id):
+    variacao = get_object_or_404(
+        VariacaoProduto.objects.select_related("produto"),
+        id=variacao_id,
+    )
+
+    variacao.ativo = not variacao.ativo
+
+    variacao.save(
+        update_fields=[
+            "ativo",
+            "data_atualizacao",
+        ]
+    )
+
+    if variacao.ativo:
+        mensagem = f'A variação "{variacao}" foi reativada.'
+    else:
+        mensagem = f'A variação "{variacao}" foi inativada.'
+
+    messages.success(
+        request,
+        mensagem,
+    )
+
+    return redirect(
+        "produtos:detalhe_produto",
+        produto_id=variacao.produto.id,
     )

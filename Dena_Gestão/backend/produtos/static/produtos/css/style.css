@@ -494,3 +494,24 @@ textarea.form-control {
         grid-template-columns: 1fr;
     }
 }
+
+    .botao-link {
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+}
+
+.botao-link-perigo {
+    color: #b91c1c;
+}
+
+.botao-link-sucesso {
+    color: #15803d;
+}
+
+.acoes-tabela form {
+    align-items: center;
+    display: flex;
+}

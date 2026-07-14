@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Produto
+from .models import Produto, VariacaoProduto
 
 
 class ProdutoForm(forms.ModelForm):
@@ -76,3 +76,67 @@ class ProdutoForm(forms.ModelForm):
                 }
             ),
         }
+
+
+class VariacaoProdutoForm(forms.ModelForm):
+    class Meta:
+        model = VariacaoProduto
+
+        fields = [
+            "tamanho",
+            "cor",
+            "modelo",
+            "codigo_sku",
+            "quantidade_estoque",
+            "estoque_minimo",
+            "ativo",
+        ]
+
+        widgets = {
+            "tamanho": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Ex.: P, M, G, GG ou 38",
+                }
+            ),
+            "cor": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Ex.: Azul-marinho",
+                }
+            ),
+            "modelo": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Ex.: Colégio Dena",
+                }
+            ),
+            "codigo_sku": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Ex.: CAM-ESC-AZM-M",
+                }
+            ),
+            "quantidade_estoque": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": "0",
+                }
+            ),
+            "estoque_minimo": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": "0",
+                }
+            ),
+            "ativo": forms.CheckboxInput(
+                attrs={
+                    "class": "form-check-input",
+                }
+            ),
+        }
+
+    def clean_codigo_sku(self):
+        codigo_sku = self.cleaned_data["codigo_sku"]
+
+        return codigo_sku.strip().upper()
