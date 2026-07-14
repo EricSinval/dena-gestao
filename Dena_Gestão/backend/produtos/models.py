@@ -110,6 +110,10 @@ class Produto(models.Model):
         verbose_name_plural = "Produtos"
         ordering = ["nome"]
 
+    @property
+    def lucro_estimado(self):
+        return self.preco_padrao - self.custo_estimado
+
     def __str__(self):
         return self.nome
 
@@ -181,6 +185,10 @@ class VariacaoProduto(models.Model):
             )
         ]
 
+    @property
+    def estoque_baixo(self):
+        return self.quantidade_estoque <= self.estoque_minimo
+
     def __str__(self):
         modelo = f" - {self.modelo}" if self.modelo else ""
 
@@ -188,7 +196,3 @@ class VariacaoProduto(models.Model):
             f"{self.produto.nome} - "
             f"{self.cor} - {self.tamanho}{modelo}"
         )
-
-    @property
-    def estoque_baixo(self):
-        return self.quantidade_estoque <= self.estoque_minimo

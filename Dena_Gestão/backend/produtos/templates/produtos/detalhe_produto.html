@@ -1,0 +1,265 @@
+{% extends "produtos/base.html" %}
+
+{% block title %}
+    {{ produto.nome }} | Dena Gestão
+{% endblock %}
+
+{% block content %}
+    <section class="titulo-pagina">
+        <div>
+            <a
+                href="{% url 'produtos:lista_produtos' %}"
+                class="link-voltar"
+            >
+                ← Voltar para produtos
+            </a>
+
+            <h1>{{ produto.nome }}</h1>
+
+            <p>
+                Informações completas do produto.
+            </p>
+        </div>
+
+        <div class="acoes-pagina">
+            <a
+                href="{% url 'produtos:editar_produto' produto.id %}"
+                class="botao botao-secundario"
+            >
+                Editar
+            </a>
+
+            <form
+                method="post"
+                action="{% url 'produtos:alterar_status_produto' produto.id %}"
+                class="formulario-inline"
+            >
+                {% csrf_token %}
+
+                {% if produto.ativo %}
+                    <button
+                        type="submit"
+                        class="botao botao-perigo"
+                        onclick="return confirm('Deseja realmente inativar este produto?');"
+                    >
+                        Inativar produto
+                    </button>
+                {% else %}
+                    <button
+                        type="submit"
+                        class="botao botao-sucesso"
+                        onclick="return confirm('Deseja reativar este produto?');"
+                    >
+                        Reativar produto
+                    </button>
+                {% endif %}
+            </form>
+        </div>
+    </section>
+
+    <section class="detalhes-grid">
+        <div class="card produto-foto-card">
+            {% if produto.imagem %}
+                <img
+                    src="{{ produto.imagem.url }}"
+                    alt="{{ produto.nome }}"
+                    class="produto-imagem-detalhe"
+                >
+            {% else %}
+                <div class="sem-imagem-detalhe">
+                    Produto sem imagem
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <div class="detalhe-cabecalho">
+                <h2>Informações gerais</h2>
+
+                {% if produto.ativo %}
+                    <span class="status status-ativo">
+                        Ativo
+                    </span>
+                {% else %}
+                    <span class="status status-inativo">
+                        Inativo
+                    </span>
+                {% endif %}
+            </div>
+
+            <dl class="lista-detalhes">
+                <div>
+                    <dt>Categoria</dt>
+                    <dd>{{ produto.categoria.nome }}</dd>
+                </div>
+
+                <div>
+                    <dt>Preço padrão</dt>
+                    <dd>
+                        R$ {{ produto.preco_padrao|floatformat:2 }}
+                    </dd>
+                </div>
+
+                <div>
+                    <dt>Custo estimado</dt>
+                    <dd>
+                        R$ {{ produto.custo_estimado|floatformat:2 }}
+                    </dd>
+                </div>
+
+                <div>
+                    <dt>Lucro estimado unitário</dt>
+                    <dd>
+                        R$ {{ produto.lucro_estimado|floatformat:2 }}
+                    </dd>
+                </div>
+
+                <div>
+                    <dt>Personalizado</dt>
+                    <dd>
+                        {% if produto.personalizado %}
+                            Sim
+                        {% else %}
+                            Não
+                        {% endif %}
+                    </dd>
+                </div>
+
+                <div>
+                    <dt>Possui bordado</dt>
+                    <dd>
+                        {% if produto.possui_bordado %}
+                            Sim
+                        {% else %}
+                            Não
+                        {% endif %}
+                    </dd>
+                </div>
+
+                <div>
+                    <dt>Cadastrado em</dt>
+                    <dd>
+                        {{ produto.data_criacao|date:"d/m/Y H:i" }}
+                    </dd>
+                </div>
+
+                <div>
+                    <dt>Última atualização</dt>
+                    <dd>
+                        {{ produto.data_atualizacao|date:"d/m/Y H:i" }}
+                    </dd>
+                </div>
+            </dl>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Descrição</h2>
+
+        <div class="descricao-produto">
+            {% if produto.descricao %}
+                {{ produto.descricao|linebreaks }}
+            {% else %}
+                <p>Nenhuma descrição cadastrada.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="detalhe-cabecalho">
+            <div>
+                <h2>Variações</h2>
+
+                <p class="texto-secundario">
+                    Tamanhos, cores, modelos e quantidades em estoque.
+                </p>
+            </div>
+        </div>
+
+        {% if variacoes %}
+            <div class="tabela-container">
+                <table class="tabela">
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>Tamanho</th>
+                            <th>Cor</th>
+                            <th>Modelo</th>
+                            <th>Estoque</th>
+                            <th>Estoque mínimo</th>
+                            <th>Situação</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for variacao in variacoes %}
+                            <tr>
+                                <td>
+                                    <strong>
+                                        {{ variacao.codigo_sku }}
+                                    </strong>
+                                </td>
+
+                                <td>{{ variacao.tamanho }}</td>
+
+                                <td>{{ variacao.cor }}</td>
+
+                                <td>
+                                    {{ variacao.modelo|default:"—" }}
+                                </td>
+
+                                <td>
+                                    {{ variacao.quantidade_estoque }}
+                                </td>
+
+                                <td>
+                                    {{ variacao.estoque_minimo }}
+                                </td>
+
+                                <td>
+                                    {% if variacao.estoque_baixo %}
+                                        <span class="status status-alerta">
+                                            Estoque baixo
+                                        </span>
+                                    {% else %}
+                                        <span class="status status-ativo">
+                                            Normal
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if variacao.ativo %}
+                                        <span class="status status-ativo">
+                                            Ativa
+                                        </span>
+                                    {% else %}
+                                        <span class="status status-inativo">
+                                            Inativa
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="estado-vazio estado-vazio-menor">
+                <h3>Nenhuma variação cadastrada</h3>
+
+                <p>
+                    As variações ainda podem ser cadastradas pelo painel administrativo.
+                </p>
+
+                <a
+                    href="/admin/produtos/variacaoproduto/add/"
+                    class="botao botao-secundario"
+                >
+                    Cadastrar variação no Admin
+                </a>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}

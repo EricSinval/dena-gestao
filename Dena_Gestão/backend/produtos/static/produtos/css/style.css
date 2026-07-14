@@ -349,3 +349,148 @@ textarea.form-control {
         flex-direction: column;
     }
 }
+
+    .acoes-pagina {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.formulario-inline {
+    display: inline;
+}
+
+.botao-perigo {
+    background: #b91c1c;
+    color: #ffffff;
+}
+
+.botao-perigo:hover {
+    background: #991b1b;
+}
+
+.botao-sucesso {
+    background: #15803d;
+    color: #ffffff;
+}
+
+.botao-sucesso:hover {
+    background: #166534;
+}
+
+.link-voltar {
+    color: #52525b;
+    display: inline-block;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.link-voltar:hover {
+    text-decoration: underline;
+}
+
+.detalhes-grid {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: minmax(260px, 360px) 1fr;
+}
+
+.produto-foto-card {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+}
+
+.produto-imagem-detalhe {
+    border-radius: 8px;
+    max-height: 420px;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.sem-imagem-detalhe {
+    align-items: center;
+    background: #f4f4f5;
+    border-radius: 8px;
+    color: #71717a;
+    display: flex;
+    height: 300px;
+    justify-content: center;
+    width: 100%;
+}
+
+.detalhe-cabecalho {
+    align-items: center;
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.lista-detalhes {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.lista-detalhes div {
+    border-bottom: 1px solid #e4e4e7;
+    padding-bottom: 12px;
+}
+
+.lista-detalhes dt {
+    color: #71717a;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.lista-detalhes dd {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.descricao-produto {
+    color: #52525b;
+    margin-top: 16px;
+}
+
+.texto-secundario {
+    color: #71717a;
+    margin-top: 4px;
+}
+
+.status-alerta {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.acoes-tabela {
+    display: flex;
+    gap: 12px;
+}
+
+.link-acao {
+    color: #3f3f46;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.link-acao:hover {
+    text-decoration: underline;
+}
+
+.estado-vazio-menor {
+    padding-bottom: 24px;
+    padding-top: 24px;
+}
+
+@media (max-width: 800px) {
+    .detalhes-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .lista-detalhes {
+        grid-template-columns: 1fr;
+    }
+}

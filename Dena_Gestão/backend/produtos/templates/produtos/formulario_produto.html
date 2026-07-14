@@ -74,18 +74,27 @@
             </div>
 
             <div class="formulario-acoes">
-                <a
-                    href="{% url 'produtos:lista_produtos' %}"
-                    class="botao botao-secundario"
-                >
-                    Cancelar
-                </a>
+                {% if produto %}
+                    <a
+                        href="{% url 'produtos:detalhe_produto' produto.id %}"
+                        class="botao botao-secundario"
+                    >
+                        Cancelar
+                    </a>
+                {% else %}
+                    <a
+                        href="{% url 'produtos:lista_produtos' %}"
+                        class="botao botao-secundario"
+                    >
+                        Cancelar
+                    </a>
+                {% endif %}
 
                 <button
                     type="submit"
                     class="botao botao-principal"
                 >
-                    Salvar produto
+                    {{ texto_botao }}
                 </button>
             </div>
         </form>

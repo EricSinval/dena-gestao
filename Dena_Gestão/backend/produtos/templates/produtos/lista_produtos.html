@@ -128,6 +128,7 @@
                         <th>Preço</th>
                         <th>Custo estimado</th>
                         <th>Status</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
 
@@ -189,6 +190,25 @@
                                     </span>
                                 {% endif %}
                             </td>
+
+                            <td>
+                                <div class="acoes-tabela">
+                                    <a
+                                        href="{% url 'produtos:detalhe_produto' produto.id %}"
+                                        class="link-acao"
+                                    >
+                                        Detalhes
+                                    </a>
+
+                                    <a
+                                        href="{% url 'produtos:editar_produto' produto.id %}"
+                                        class="link-acao"
+                                    >
+                                        Editar
+                                    </a>
+                                </div>
+                            </td>
+
                         </tr>
                     {% endfor %}
                 </tbody>
