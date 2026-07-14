@@ -1,0 +1,213 @@
+{% extends "produtos/base.html" %}
+
+{% block title %}
+    Produtos | Dena Gestão
+{% endblock %}
+
+{% block content %}
+    <section class="titulo-pagina">
+        <div>
+            <h1>Produtos</h1>
+            <p>
+                Consulte e gerencie os produtos cadastrados.
+            </p>
+        </div>
+
+        <a
+            href="{% url 'produtos:cadastrar_produto' %}"
+            class="botao botao-principal"
+        >
+            + Novo produto
+        </a>
+    </section>
+
+    <section class="card filtros">
+        <form method="get" class="formulario-filtros">
+            <div class="campo campo-pesquisa">
+                <label for="busca">
+                    Pesquisar
+                </label>
+
+                <input
+                    type="text"
+                    id="busca"
+                    name="busca"
+                    value="{{ busca }}"
+                    placeholder="Nome, descrição ou categoria"
+                    class="form-control"
+                >
+            </div>
+
+            <div class="campo">
+                <label for="categoria">
+                    Categoria
+                </label>
+
+                <select
+                    id="categoria"
+                    name="categoria"
+                    class="form-control"
+                >
+                    <option value="">
+                        Todas
+                    </option>
+
+                    {% for categoria in categorias %}
+                        <option
+                            value="{{ categoria.id }}"
+                            {% if categoria_selecionada == categoria.id|stringformat:"s" %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ categoria.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="status">
+                    Status
+                </label>
+
+                <select
+                    id="status"
+                    name="status"
+                    class="form-control"
+                >
+                    <option value="">
+                        Todos
+                    </option>
+
+                    <option
+                        value="ativo"
+                        {% if status_selecionado == "ativo" %}
+                            selected
+                        {% endif %}
+                    >
+                        Ativos
+                    </option>
+
+                    <option
+                        value="inativo"
+                        {% if status_selecionado == "inativo" %}
+                            selected
+                        {% endif %}
+                    >
+                        Inativos
+                    </option>
+                </select>
+            </div>
+
+            <div class="acoes-filtro">
+                <button
+                    type="submit"
+                    class="botao botao-principal"
+                >
+                    Filtrar
+                </button>
+
+                <a
+                    href="{% url 'produtos:lista_produtos' %}"
+                    class="botao botao-secundario"
+                >
+                    Limpar
+                </a>
+            </div>
+        </form>
+    </section>
+
+    <section class="card tabela-container">
+        {% if produtos %}
+            <table class="tabela">
+                <thead>
+                    <tr>
+                        <th>Imagem</th>
+                        <th>Produto</th>
+                        <th>Categoria</th>
+                        <th>Preço</th>
+                        <th>Custo estimado</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for produto in produtos %}
+                        <tr>
+                            <td>
+                                {% if produto.imagem %}
+                                    <img
+                                        src="{{ produto.imagem.url }}"
+                                        alt="{{ produto.nome }}"
+                                        class="produto-imagem"
+                                    >
+                                {% else %}
+                                    <div class="sem-imagem">
+                                        Sem imagem
+                                    </div>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <strong>
+                                    {{ produto.nome }}
+                                </strong>
+
+                                {% if produto.possui_bordado %}
+                                    <span class="etiqueta">
+                                        Bordado
+                                    </span>
+                                {% endif %}
+
+                                {% if produto.personalizado %}
+                                    <span class="etiqueta">
+                                        Personalizado
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {{ produto.categoria.nome }}
+                            </td>
+
+                            <td>
+                                R$ {{ produto.preco_padrao|floatformat:2 }}
+                            </td>
+
+                            <td>
+                                R$ {{ produto.custo_estimado|floatformat:2 }}
+                            </td>
+
+                            <td>
+                                {% if produto.ativo %}
+                                    <span class="status status-ativo">
+                                        Ativo
+                                    </span>
+                                {% else %}
+                                    <span class="status status-inativo">
+                                        Inativo
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="estado-vazio">
+                <h2>Nenhum produto encontrado</h2>
+
+                <p>
+                    Cadastre um produto ou altere os filtros da pesquisa.
+                </p>
+
+                <a
+                    href="{% url 'produtos:cadastrar_produto' %}"
+                    class="botao botao-principal"
+                >
+                    Cadastrar produto
+                </a>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}

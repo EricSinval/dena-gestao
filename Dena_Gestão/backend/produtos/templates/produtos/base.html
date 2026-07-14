@@ -1,0 +1,66 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {% block title %}
+            Dena Gestão
+        {% endblock %}
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'produtos/css/style.css' %}"
+    >
+</head>
+
+<body>
+    <header class="cabecalho">
+        <div class="container cabecalho-conteudo">
+            <a
+                href="{% url 'produtos:lista_produtos' %}"
+                class="logo"
+            >
+                Dena Gestão
+            </a>
+
+            <nav class="menu">
+                <a href="{% url 'produtos:lista_produtos' %}">
+                    Produtos
+                </a>
+
+                <a href="{% url 'produtos:cadastrar_produto' %}">
+                    Novo produto
+                </a>
+
+                <a href="/admin/">
+                    Administração
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container conteudo-principal">
+        {% if messages %}
+            <div class="mensagens">
+                {% for message in messages %}
+                    <div class="mensagem mensagem-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+</body>
+</html>
