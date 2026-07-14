@@ -515,3 +515,27 @@ textarea.form-control {
     align-items: center;
     display: flex;
 }
+
+.lista-detalhes-uma-coluna {
+    grid-template-columns: 1fr;
+    margin-top: 20px;
+}
+
+.formulario-grid-uma-coluna {
+    grid-template-columns: 1fr;
+    margin-top: 20px;
+}
+
+.estoque-destaque {
+    font-size: 28px !important;
+}
+
+.quantidade-entrada {
+    color: #15803d;
+    font-weight: 700;
+}
+
+.quantidade-saida {
+    color: #b91c1c;
+    font-weight: 700;
+}

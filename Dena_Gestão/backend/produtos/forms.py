@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Produto, VariacaoProduto
+from .models import MovimentacaoEstoque, Produto, VariacaoProduto
 
 
 class ProdutoForm(forms.ModelForm):
@@ -87,7 +87,6 @@ class VariacaoProdutoForm(forms.ModelForm):
             "cor",
             "modelo",
             "codigo_sku",
-            "quantidade_estoque",
             "estoque_minimo",
             "ativo",
         ]
@@ -117,12 +116,6 @@ class VariacaoProdutoForm(forms.ModelForm):
                     "placeholder": "Ex.: CAM-ESC-AZM-M",
                 }
             ),
-            "quantidade_estoque": forms.NumberInput(
-                attrs={
-                    "class": "form-control",
-                    "min": "0",
-                }
-            ),
             "estoque_minimo": forms.NumberInput(
                 attrs={
                     "class": "form-control",
@@ -140,3 +133,41 @@ class VariacaoProdutoForm(forms.ModelForm):
         codigo_sku = self.cleaned_data["codigo_sku"]
 
         return codigo_sku.strip().upper()
+    
+class MovimentacaoEstoqueForm(forms.Form):
+    tipo = forms.ChoiceField(
+        choices=MovimentacaoEstoque.TipoMovimentacao.choices,
+        label="Tipo de movimentação",
+        widget=forms.Select(
+            attrs={
+                "class": "form-control",
+            }
+        ),
+    )
+
+    quantidade = forms.IntegerField(
+        min_value=1,
+        label="Quantidade",
+        widget=forms.NumberInput(
+            attrs={
+                "class": "form-control",
+                "min": "1",
+                "placeholder": "Digite a quantidade",
+            }
+        ),
+    )
+
+    motivo = forms.CharField(
+        required=False,
+        label="Motivo ou observação",
+        widget=forms.Textarea(
+            attrs={
+                "class": "form-control",
+                "rows": 4,
+                "placeholder": (
+                    "Ex.: venda realizada, material perdido, "
+                    "correção de inventário..."
+                ),
+            }
+        ),
+    )

@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 
@@ -196,3 +197,82 @@ class VariacaoProduto(models.Model):
             f"{self.produto.nome} - "
             f"{self.cor} - {self.tamanho}{modelo}"
         )
+
+
+class MovimentacaoEstoque(models.Model):
+    class TipoMovimentacao(models.TextChoices):
+        ENTRADA = "ENTRADA", "Entrada"
+        SAIDA_VENDA = "SAIDA_VENDA", "Saída por venda"
+        PERDA = "PERDA", "Perda"
+        DEVOLUCAO = "DEVOLUCAO", "Devolução"
+        PRODUCAO = "PRODUCAO", "Produção concluída"
+        AJUSTE_ENTRADA = "AJUSTE_ENTRADA", "Ajuste de entrada"
+        AJUSTE_SAIDA = "AJUSTE_SAIDA", "Ajuste de saída"
+
+    variacao = models.ForeignKey(
+        VariacaoProduto,
+        on_delete=models.PROTECT,
+        related_name="movimentacoes",
+        verbose_name="Variação",
+    )
+
+    tipo = models.CharField(
+        max_length=30,
+        choices=TipoMovimentacao.choices,
+        verbose_name="Tipo de movimentação",
+    )
+
+    quantidade = models.PositiveIntegerField(
+        validators=[
+            MinValueValidator(1),
+        ],
+        verbose_name="Quantidade",
+    )
+
+    saldo_anterior = models.PositiveIntegerField(
+        verbose_name="Saldo anterior",
+    )
+
+    saldo_resultante = models.PositiveIntegerField(
+        verbose_name="Saldo resultante",
+    )
+
+    motivo = models.TextField(
+        blank=True,
+        verbose_name="Motivo ou observação",
+    )
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="movimentacoes_estoque",
+        verbose_name="Usuário",
+    )
+
+    data_movimentacao = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Data da movimentação",
+    )
+
+    class Meta:
+        verbose_name = "Movimentação de estoque"
+        verbose_name_plural = "Movimentações de estoque"
+        ordering = ["-data_movimentacao"]
+
+    def __str__(self):
+        return (
+            f"{self.get_tipo_display()} - "
+            f"{self.variacao.codigo_sku} - "
+            f"{self.quantidade}"
+        )
+
+    @property
+    def movimentacao_entrada(self):
+        return self.tipo in {
+            self.TipoMovimentacao.ENTRADA,
+            self.TipoMovimentacao.DEVOLUCAO,
+            self.TipoMovimentacao.PRODUCAO,
+            self.TipoMovimentacao.AJUSTE_ENTRADA,
+        }

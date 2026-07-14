@@ -1,10 +1,20 @@
 from django.contrib import messages
+from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from .forms import ProdutoForm, VariacaoProdutoForm
-from .models import Categoria, Produto, VariacaoProduto
+from .forms import (
+    MovimentacaoEstoqueForm,
+    ProdutoForm,
+    VariacaoProdutoForm,
+)
+from .models import (
+    Categoria,
+    MovimentacaoEstoque,
+    Produto,
+    VariacaoProduto,
+)
 
 
 def lista_produtos(request):
@@ -321,4 +331,107 @@ def alterar_status_variacao(request, variacao_id):
     return redirect(
         "produtos:detalhe_produto",
         produto_id=variacao.produto.id,
+    )
+
+def movimentar_estoque(request, variacao_id):
+    variacao_visualizada = get_object_or_404(
+        VariacaoProduto.objects.select_related(
+            "produto",
+            "produto__categoria",
+        ),
+        id=variacao_id,
+    )
+
+    if request.method == "POST":
+        formulario = MovimentacaoEstoqueForm(
+            request.POST,
+        )
+
+        if formulario.is_valid():
+            tipo = formulario.cleaned_data["tipo"]
+            quantidade = formulario.cleaned_data["quantidade"]
+            motivo = formulario.cleaned_data["motivo"]
+
+            tipos_entrada = {
+                MovimentacaoEstoque.TipoMovimentacao.ENTRADA,
+                MovimentacaoEstoque.TipoMovimentacao.DEVOLUCAO,
+                MovimentacaoEstoque.TipoMovimentacao.PRODUCAO,
+                MovimentacaoEstoque.TipoMovimentacao.AJUSTE_ENTRADA,
+            }
+
+            with transaction.atomic():
+                variacao = (
+                    VariacaoProduto.objects
+                    .select_for_update()
+                    .select_related("produto")
+                    .get(id=variacao_id)
+                )
+
+                saldo_anterior = variacao.quantidade_estoque
+
+                if tipo in tipos_entrada:
+                    saldo_resultante = saldo_anterior + quantidade
+
+                else:
+                    saldo_resultante = saldo_anterior - quantidade
+
+                    if saldo_resultante < 0:
+                        formulario.add_error(
+                            "quantidade",
+                            (
+                                "A quantidade informada é maior que "
+                                "o estoque disponível."
+                            ),
+                        )
+
+                if not formulario.errors:
+                    usuario = None
+
+                    if request.user.is_authenticated:
+                        usuario = request.user
+
+                    MovimentacaoEstoque.objects.create(
+                        variacao=variacao,
+                        tipo=tipo,
+                        quantidade=quantidade,
+                        saldo_anterior=saldo_anterior,
+                        saldo_resultante=saldo_resultante,
+                        motivo=motivo,
+                        usuario=usuario,
+                    )
+
+                    variacao.quantidade_estoque = saldo_resultante
+                    variacao.save(
+                        update_fields=[
+                            "quantidade_estoque",
+                            "data_atualizacao",
+                        ]
+                    )
+
+                    messages.success(
+                        request,
+                        (
+                            "Movimentação registrada com sucesso. "
+                            f"Novo estoque: {saldo_resultante}."
+                        ),
+                    )
+
+                    return redirect(
+                        "produtos:detalhe_produto",
+                        produto_id=variacao.produto.id,
+                    )
+
+    else:
+        formulario = MovimentacaoEstoqueForm()
+
+    contexto = {
+        "formulario": formulario,
+        "variacao": variacao_visualizada,
+        "produto": variacao_visualizada.produto,
+    }
+
+    return render(
+        request,
+        "produtos/movimentar_estoque.html",
+        contexto,
     )

@@ -1,0 +1,118 @@
+{% extends "produtos/base.html" %}
+
+{% block title %}
+    Movimentar estoque | Dena Gestão
+{% endblock %}
+
+{% block content %}
+    <section class="titulo-pagina">
+        <div>
+            <a
+                href="{% url 'produtos:detalhe_produto' produto.id %}"
+                class="link-voltar"
+            >
+                ← Voltar para {{ produto.nome }}
+            </a>
+
+            <h1>Movimentar estoque</h1>
+
+            <p>
+                Registre uma entrada, saída, perda ou ajuste.
+            </p>
+        </div>
+    </section>
+
+    <section class="detalhes-grid">
+        <div class="card">
+            <h2>Variação selecionada</h2>
+
+            <dl class="lista-detalhes lista-detalhes-uma-coluna">
+                <div>
+                    <dt>Produto</dt>
+                    <dd>{{ produto.nome }}</dd>
+                </div>
+
+                <div>
+                    <dt>SKU</dt>
+                    <dd>{{ variacao.codigo_sku }}</dd>
+                </div>
+
+                <div>
+                    <dt>Tamanho</dt>
+                    <dd>{{ variacao.tamanho }}</dd>
+                </div>
+
+                <div>
+                    <dt>Cor</dt>
+                    <dd>{{ variacao.cor }}</dd>
+                </div>
+
+                <div>
+                    <dt>Modelo</dt>
+                    <dd>{{ variacao.modelo|default:"—" }}</dd>
+                </div>
+
+                <div>
+                    <dt>Estoque atual</dt>
+                    <dd class="estoque-destaque">
+                        {{ variacao.quantidade_estoque }}
+                    </dd>
+                </div>
+            </dl>
+        </div>
+
+        <div class="card">
+            <h2>Nova movimentação</h2>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                {% if formulario.non_field_errors %}
+                    <div class="mensagem mensagem-error">
+                        {% for erro in formulario.non_field_errors %}
+                            <p>{{ erro }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="formulario-grid formulario-grid-uma-coluna">
+                    {% for campo in formulario %}
+                        <div class="campo">
+                            <label for="{{ campo.id_for_label }}">
+                                {{ campo.label }}
+
+                                {% if campo.field.required %}
+                                    <span class="obrigatorio">*</span>
+                                {% endif %}
+                            </label>
+
+                            {{ campo }}
+
+                            {% for erro in campo.errors %}
+                                <small class="erro">
+                                    {{ erro }}
+                                </small>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="formulario-acoes">
+                    <a
+                        href="{% url 'produtos:detalhe_produto' produto.id %}"
+                        class="botao botao-secundario"
+                    >
+                        Cancelar
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="botao botao-principal"
+                    >
+                        Registrar movimentação
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+{% endblock %}

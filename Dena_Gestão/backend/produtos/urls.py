@@ -46,4 +46,10 @@ urlpatterns = [
         views.alterar_status_variacao,
         name="alterar_status_variacao",
     ),
+
+    path(
+        "variacoes/<int:variacao_id>/movimentar-estoque/",
+        views.movimentar_estoque,
+        name="movimentar_estoque",
+    ),
 ]

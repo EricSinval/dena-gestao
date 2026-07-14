@@ -1,6 +1,11 @@
 from django.contrib import admin
 
-from .models import Categoria, Produto, VariacaoProduto
+from .models import (
+    Categoria,
+    MovimentacaoEstoque,
+    Produto,
+    VariacaoProduto,
+)
 
 
 @admin.register(Categoria)
@@ -87,3 +92,43 @@ class VariacaoProdutoAdmin(admin.ModelAdmin):
     )
     def exibir_estoque_baixo(self, variacao):
         return variacao.estoque_baixo
+    
+@admin.register(MovimentacaoEstoque)
+class MovimentacaoEstoqueAdmin(admin.ModelAdmin):
+    list_display = (
+        "data_movimentacao",
+        "variacao",
+        "tipo",
+        "quantidade",
+        "saldo_anterior",
+        "saldo_resultante",
+        "usuario",
+    )
+
+    list_filter = (
+        "tipo",
+        "data_movimentacao",
+    )
+
+    search_fields = (
+        "variacao__codigo_sku",
+        "variacao__produto__nome",
+        "motivo",
+    )
+
+    readonly_fields = (
+        "variacao",
+        "tipo",
+        "quantidade",
+        "saldo_anterior",
+        "saldo_resultante",
+        "motivo",
+        "usuario",
+        "data_movimentacao",
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
