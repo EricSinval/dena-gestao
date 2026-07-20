@@ -1,0 +1,222 @@
+{% extends "produtos/base.html" %}
+
+{% block title %}
+    {{ materia_prima.nome }} | Dena Gestão
+{% endblock %}
+
+{% block content %}
+    <section class="titulo-pagina">
+        <div>
+            <a
+                href="{% url 'insumos:lista_materias_primas' %}"
+                class="link-voltar"
+            >
+                ← Voltar para matérias-primas
+            </a>
+
+            <h1>{{ materia_prima.nome }}</h1>
+
+            <p>
+                Informações e histórico do material.
+            </p>
+        </div>
+
+        <div class="acoes-pagina">
+            <a
+                href="{% url 'insumos:movimentar_materia_prima' materia_prima.id %}"
+                class="botao botao-principal"
+            >
+                Movimentar estoque
+            </a>
+
+            <a
+                href="{% url 'insumos:editar_materia_prima' materia_prima.id %}"
+                class="botao botao-secundario"
+            >
+                Editar
+            </a>
+
+            <form
+                method="post"
+                action="{% url 'insumos:alterar_status_materia_prima' materia_prima.id %}"
+                class="formulario-inline"
+            >
+                {% csrf_token %}
+
+                {% if materia_prima.ativo %}
+                    <button
+                        type="submit"
+                        class="botao botao-perigo"
+                        onclick="return confirm('Deseja inativar esta matéria-prima?');"
+                    >
+                        Inativar
+                    </button>
+                {% else %}
+                    <button
+                        type="submit"
+                        class="botao botao-sucesso"
+                    >
+                        Reativar
+                    </button>
+                {% endif %}
+            </form>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="detalhe-cabecalho">
+            <h2>Resumo</h2>
+
+            {% if materia_prima.ativo %}
+                <span class="status status-ativo">Ativa</span>
+            {% else %}
+                <span class="status status-inativo">Inativa</span>
+            {% endif %}
+        </div>
+
+        <dl class="lista-detalhes">
+            <div>
+                <dt>Categoria</dt>
+                <dd>{{ materia_prima.categoria.nome }}</dd>
+            </div>
+
+            <div>
+                <dt>Unidade de medida</dt>
+                <dd>
+                    {{ materia_prima.get_unidade_medida_display }}
+                </dd>
+            </div>
+
+            <div>
+                <dt>Estoque atual</dt>
+                <dd>
+                    {{ materia_prima.quantidade_estoque|floatformat:3 }}
+                </dd>
+            </div>
+
+            <div>
+                <dt>Estoque mínimo</dt>
+                <dd>
+                    {{ materia_prima.estoque_minimo|floatformat:3 }}
+                </dd>
+            </div>
+
+            <div>
+                <dt>Custo médio unitário</dt>
+                <dd>
+                    R$ {{ materia_prima.custo_unitario|floatformat:4 }}
+                </dd>
+            </div>
+
+            <div>
+                <dt>Valor em estoque</dt>
+                <dd>
+                    R$ {{ materia_prima.valor_em_estoque|floatformat:2 }}
+                </dd>
+            </div>
+        </dl>
+    </section>
+
+    <section class="card">
+        <h2>Descrição</h2>
+
+        <div class="descricao-produto">
+            {{ materia_prima.descricao|default:"Nenhuma descrição cadastrada."|linebreaks }}
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="detalhe-cabecalho">
+            <div>
+                <h2>Histórico de movimentações</h2>
+
+                <p class="texto-secundario">
+                    Últimas 30 movimentações.
+                </p>
+            </div>
+        </div>
+
+        {% if movimentacoes %}
+            <div class="tabela-container">
+                <table class="tabela">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Tipo</th>
+                            <th>Quantidade</th>
+                            <th>Saldo anterior</th>
+                            <th>Saldo resultante</th>
+                            <th>Custo da compra</th>
+                            <th>Motivo</th>
+                            <th>Usuário</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for movimentacao in movimentacoes %}
+                            <tr>
+                                <td>
+                                    {{ movimentacao.data_movimentacao|date:"d/m/Y H:i" }}
+                                </td>
+
+                                <td>
+                                    {{ movimentacao.get_tipo_display }}
+                                </td>
+
+                                <td>
+                                    {% if movimentacao.movimentacao_entrada %}
+                                        <span class="quantidade-entrada">
+                                            +{{ movimentacao.quantidade|floatformat:3 }}
+                                        </span>
+                                    {% else %}
+                                        <span class="quantidade-saida">
+                                            -{{ movimentacao.quantidade|floatformat:3 }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {{ movimentacao.saldo_anterior|floatformat:3 }}
+                                </td>
+
+                                <td>
+                                    <strong>
+                                        {{ movimentacao.saldo_resultante|floatformat:3 }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {% if movimentacao.custo_unitario_movimentacao != None %}
+                                        R$ {{ movimentacao.custo_unitario_movimentacao|floatformat:4 }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {{ movimentacao.motivo|default:"—" }}
+                                </td>
+
+                                <td>
+                                    {% if movimentacao.usuario %}
+                                        {{ movimentacao.usuario.username }}
+                                    {% else %}
+                                        Sistema
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="estado-vazio estado-vazio-menor">
+                <h3>Nenhuma movimentação registrada</h3>
+
+                <p>
+                    Registre uma compra ou entrada para iniciar o estoque.
+                </p>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}

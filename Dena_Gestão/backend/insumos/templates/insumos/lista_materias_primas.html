@@ -1,0 +1,217 @@
+{% extends "produtos/base.html" %}
+
+{% block title %}
+    Matérias-primas | Dena Gestão
+{% endblock %}
+
+{% block content %}
+    <section class="titulo-pagina">
+        <div>
+            <h1>Matérias-primas</h1>
+
+            <p>
+                Consulte materiais, custos e saldos disponíveis.
+            </p>
+        </div>
+
+        <div class="acoes-pagina">
+            <a
+                href="{% url 'insumos:cadastrar_categoria' %}"
+                class="botao botao-secundario"
+            >
+                Nova categoria
+            </a>
+
+            <a
+                href="{% url 'insumos:cadastrar_materia_prima' %}"
+                class="botao botao-principal"
+            >
+                + Nova matéria-prima
+            </a>
+        </div>
+    </section>
+
+    <section class="card filtros">
+        <form method="get" class="formulario-filtros">
+            <div class="campo campo-pesquisa">
+                <label for="busca">Pesquisar</label>
+
+                <input
+                    type="text"
+                    id="busca"
+                    name="busca"
+                    value="{{ busca }}"
+                    placeholder="Nome, descrição ou categoria"
+                    class="form-control"
+                >
+            </div>
+
+            <div class="campo">
+                <label for="categoria">Categoria</label>
+
+                <select
+                    id="categoria"
+                    name="categoria"
+                    class="form-control"
+                >
+                    <option value="">Todas</option>
+
+                    {% for categoria in categorias %}
+                        <option
+                            value="{{ categoria.id }}"
+                            {% if categoria_selecionada == categoria.id|stringformat:"s" %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ categoria.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="status">Status</label>
+
+                <select
+                    id="status"
+                    name="status"
+                    class="form-control"
+                >
+                    <option value="">Todos</option>
+
+                    <option
+                        value="ativo"
+                        {% if status_selecionado == "ativo" %}
+                            selected
+                        {% endif %}
+                    >
+                        Ativos
+                    </option>
+
+                    <option
+                        value="inativo"
+                        {% if status_selecionado == "inativo" %}
+                            selected
+                        {% endif %}
+                    >
+                        Inativos
+                    </option>
+                </select>
+            </div>
+
+            <div class="acoes-filtro">
+                <button
+                    type="submit"
+                    class="botao botao-principal"
+                >
+                    Filtrar
+                </button>
+
+                <a
+                    href="{% url 'insumos:lista_materias_primas' %}"
+                    class="botao botao-secundario"
+                >
+                    Limpar
+                </a>
+            </div>
+        </form>
+    </section>
+
+    <section class="card tabela-container">
+        {% if materias_primas %}
+            <table class="tabela">
+                <thead>
+                    <tr>
+                        <th>Material</th>
+                        <th>Categoria</th>
+                        <th>Unidade</th>
+                        <th>Saldo</th>
+                        <th>Mínimo</th>
+                        <th>Custo médio</th>
+                        <th>Valor em estoque</th>
+                        <th>Situação</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for materia_prima in materias_primas %}
+                        <tr>
+                            <td>
+                                <strong>
+                                    {{ materia_prima.nome }}
+                                </strong>
+                            </td>
+
+                            <td>
+                                {{ materia_prima.categoria.nome }}
+                            </td>
+
+                            <td>
+                                {{ materia_prima.get_unidade_medida_display }}
+                            </td>
+
+                            <td>
+                                {{ materia_prima.quantidade_estoque|floatformat:3 }}
+                            </td>
+
+                            <td>
+                                {{ materia_prima.estoque_minimo|floatformat:3 }}
+                            </td>
+
+                            <td>
+                                R$ {{ materia_prima.custo_unitario|floatformat:4 }}
+                            </td>
+
+                            <td>
+                                R$ {{ materia_prima.valor_em_estoque|floatformat:2 }}
+                            </td>
+
+                            <td>
+                                {% if not materia_prima.ativo %}
+                                    <span class="status status-inativo">
+                                        Inativa
+                                    </span>
+                                {% elif materia_prima.estoque_baixo %}
+                                    <span class="status status-alerta">
+                                        Estoque baixo
+                                    </span>
+                                {% else %}
+                                    <span class="status status-ativo">
+                                        Normal
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <div class="acoes-tabela">
+                                    <a
+                                        href="{% url 'insumos:detalhe_materia_prima' materia_prima.id %}"
+                                        class="link-acao"
+                                    >
+                                        Detalhes
+                                    </a>
+
+                                    <a
+                                        href="{% url 'insumos:movimentar_materia_prima' materia_prima.id %}"
+                                        class="link-acao"
+                                    >
+                                        Movimentar
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="estado-vazio">
+                <h2>Nenhuma matéria-prima encontrada</h2>
+
+                <p>
+                    Cadastre um material ou altere os filtros.
+                </p>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}

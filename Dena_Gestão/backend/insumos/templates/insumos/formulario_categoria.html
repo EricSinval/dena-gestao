@@ -1,0 +1,75 @@
+{% extends "produtos/base.html" %}
+
+{% block title %}
+    Nova categoria | Dena Gestão
+{% endblock %}
+
+{% block content %}
+    <section class="titulo-pagina">
+        <div>
+            <a
+                href="{% url 'insumos:lista_materias_primas' %}"
+                class="link-voltar"
+            >
+                ← Voltar para matérias-primas
+            </a>
+
+            <h1>Nova categoria</h1>
+
+            <p>
+                Cadastre uma categoria de matéria-prima.
+            </p>
+        </div>
+    </section>
+
+    <section class="card formulario-card">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="formulario-grid">
+                {% for campo in formulario %}
+                    <div
+                        class="campo
+                        {% if campo.name == 'descricao' %}
+                            campo-completo
+                        {% endif %}
+                        "
+                    >
+                        {% if campo.field.widget.input_type == "checkbox" %}
+                            <label class="checkbox-label">
+                                {{ campo }}
+                                {{ campo.label }}
+                            </label>
+                        {% else %}
+                            <label for="{{ campo.id_for_label }}">
+                                {{ campo.label }}
+                            </label>
+
+                            {{ campo }}
+                        {% endif %}
+
+                        {% for erro in campo.errors %}
+                            <small class="erro">{{ erro }}</small>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="formulario-acoes">
+                <a
+                    href="{% url 'insumos:lista_materias_primas' %}"
+                    class="botao botao-secundario"
+                >
+                    Cancelar
+                </a>
+
+                <button
+                    type="submit"
+                    class="botao botao-principal"
+                >
+                    Salvar categoria
+                </button>
+            </div>
+        </form>
+    </section>
+{% endblock %}
