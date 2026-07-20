@@ -10,6 +10,7 @@ class ProdutoForm(forms.ModelForm):
         fields = [
             "categoria",
             "nome",
+            "tipo_origem",
             "descricao",
             "preco_padrao",
             "custo_estimado",
@@ -29,6 +30,11 @@ class ProdutoForm(forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "placeholder": "Digite o nome do produto",
+                }
+            ),
+            "tipo_origem": forms.Select(
+                attrs={
+                    "class": "form-control",
                 }
             ),
             "descricao": forms.Textarea(
@@ -133,7 +139,8 @@ class VariacaoProdutoForm(forms.ModelForm):
         codigo_sku = self.cleaned_data["codigo_sku"]
 
         return codigo_sku.strip().upper()
-    
+
+
 class MovimentacaoEstoqueForm(forms.Form):
     tipo = forms.ChoiceField(
         choices=MovimentacaoEstoque.TipoMovimentacao.choices,

@@ -92,17 +92,24 @@ def cadastrar_produto(request):
 def detalhe_produto(request, produto_id):
     produto = get_object_or_404(
         Produto.objects.select_related("categoria").prefetch_related(
-            "variacoes"
+            "variacoes",
+            "variacoes__movimentacoes",
         ),
         id=produto_id,
     )
 
     contexto = {
-            "produto": produto,
-            "variacoes": produto.variacoes.order_by(
+        "produto": produto,
+        "variacoes": produto.variacoes.order_by(
             "cor",
             "tamanho",
             "modelo",
+        ),
+        "movimentacoes": (
+            MovimentacaoEstoque.objects
+            .filter(variacao__produto=produto)
+            .select_related("variacao", "usuario")
+            .order_by("-data_movimentacao")[:20]
         ),
     }
 

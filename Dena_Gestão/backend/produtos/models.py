@@ -42,6 +42,17 @@ class Categoria(models.Model):
 
 
 class Produto(models.Model):
+    class TipoOrigem(models.TextChoices):
+        FABRICACAO_PROPRIA = (
+            "FABRICACAO_PROPRIA",
+            "Fabricação própria",
+        )
+
+        REVENDA = (
+            "REVENDA",
+            "Revenda",
+        )
+
     categoria = models.ForeignKey(
         Categoria,
         on_delete=models.PROTECT,
@@ -59,17 +70,32 @@ class Produto(models.Model):
         verbose_name="Descrição",
     )
 
+    tipo_origem = models.CharField(
+        max_length=30,
+        choices=TipoOrigem.choices,
+        default=TipoOrigem.FABRICACAO_PROPRIA,
+        verbose_name="Tipo de origem",
+    )
+
     preco_padrao = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        validators=[MinValueValidator(Decimal("0.00"))],
+        validators=[
+            MinValueValidator(
+                Decimal("0.00"),
+            ),
+        ],
         verbose_name="Preço padrão",
     )
 
     custo_estimado = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        validators=[MinValueValidator(Decimal("0.00"))],
+        validators=[
+            MinValueValidator(
+                Decimal("0.00"),
+            ),
+        ],
         default=Decimal("0.00"),
         verbose_name="Custo estimado",
     )
@@ -177,11 +203,20 @@ class VariacaoProduto(models.Model):
     class Meta:
         verbose_name = "Variação de produto"
         verbose_name_plural = "Variações de produtos"
-        ordering = ["produto__nome", "cor", "tamanho"]
+        ordering = [
+            "produto__nome",
+            "cor",
+            "tamanho",
+        ]
 
         constraints = [
             models.UniqueConstraint(
-                fields=["produto", "tamanho", "cor", "modelo"],
+                fields=[
+                    "produto",
+                    "tamanho",
+                    "cor",
+                    "modelo",
+                ],
                 name="variacao_unica_por_produto",
             )
         ]
@@ -195,19 +230,48 @@ class VariacaoProduto(models.Model):
 
         return (
             f"{self.produto.nome} - "
-            f"{self.cor} - {self.tamanho}{modelo}"
+            f"{self.cor} - "
+            f"{self.tamanho}"
+            f"{modelo}"
         )
 
 
 class MovimentacaoEstoque(models.Model):
     class TipoMovimentacao(models.TextChoices):
-        ENTRADA = "ENTRADA", "Entrada"
-        SAIDA_VENDA = "SAIDA_VENDA", "Saída por venda"
-        PERDA = "PERDA", "Perda"
-        DEVOLUCAO = "DEVOLUCAO", "Devolução"
-        PRODUCAO = "PRODUCAO", "Produção concluída"
-        AJUSTE_ENTRADA = "AJUSTE_ENTRADA", "Ajuste de entrada"
-        AJUSTE_SAIDA = "AJUSTE_SAIDA", "Ajuste de saída"
+        ENTRADA = (
+            "ENTRADA",
+            "Entrada",
+        )
+
+        SAIDA_VENDA = (
+            "SAIDA_VENDA",
+            "Saída por venda",
+        )
+
+        PERDA = (
+            "PERDA",
+            "Perda",
+        )
+
+        DEVOLUCAO = (
+            "DEVOLUCAO",
+            "Devolução",
+        )
+
+        PRODUCAO = (
+            "PRODUCAO",
+            "Produção concluída",
+        )
+
+        AJUSTE_ENTRADA = (
+            "AJUSTE_ENTRADA",
+            "Ajuste de entrada",
+        )
+
+        AJUSTE_SAIDA = (
+            "AJUSTE_SAIDA",
+            "Ajuste de saída",
+        )
 
     variacao = models.ForeignKey(
         VariacaoProduto,
@@ -259,7 +323,9 @@ class MovimentacaoEstoque(models.Model):
     class Meta:
         verbose_name = "Movimentação de estoque"
         verbose_name_plural = "Movimentações de estoque"
-        ordering = ["-data_movimentacao"]
+        ordering = [
+            "-data_movimentacao",
+        ]
 
     def __str__(self):
         return (
