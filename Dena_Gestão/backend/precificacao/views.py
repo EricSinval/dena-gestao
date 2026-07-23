@@ -16,7 +16,7 @@ from .models import (
     PrecificacaoProduto,
 )
 from .services import calcular_precificacao
-
+from django.views.decorators.http import require_POST
 
 def cadastrar_configuracao(request):
     if request.method == "POST":
@@ -147,4 +147,38 @@ def detalhe_precificacao(request, precificacao_id):
         {
             "precificacao": precificacao,
         },
+    )
+
+@require_POST
+def aplicar_preco_sugerido(request, precificacao_id):
+    precificacao = get_object_or_404(
+        PrecificacaoProduto.objects.select_related(
+            "produto",
+        ),
+        id=precificacao_id,
+    )
+
+    produto = precificacao.produto
+
+    produto.preco_padrao = precificacao.preco_sugerido
+
+    produto.save(
+        update_fields=[
+            "preco_padrao",
+            "data_atualizacao",
+        ]
+    )
+
+    messages.success(
+        request,
+        (
+            f'O preço padrão do produto "{produto.nome}" '
+            f"foi atualizado para "
+            f"R$ {precificacao.preco_sugerido:.2f}.'"
+        ),
+    )
+
+    return redirect(
+        "produtos:detalhe_produto",
+        produto_id=produto.id,
     )

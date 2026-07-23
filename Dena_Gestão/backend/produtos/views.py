@@ -4,6 +4,8 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from precificacao.models import PrecificacaoProduto
+
 from .forms import (
     ComposicaoProdutoForm,
     MovimentacaoEstoqueForm,
@@ -154,11 +156,25 @@ def detalhe_produto(request, produto_id):
         )
     )
 
+    precificacoes = (
+        PrecificacaoProduto.objects
+        .filter(
+            produto=produto,
+        )
+        .select_related(
+            "configuracao",
+        )
+        .order_by(
+            "-data_calculo",
+        )[:20]
+    )
+
     contexto = {
         "produto": produto,
         "variacoes": variacoes,
         "movimentacoes": movimentacoes,
         "composicoes": composicoes,
+        "precificacoes": precificacoes,
     }
 
     return render(

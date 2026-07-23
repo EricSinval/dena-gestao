@@ -287,6 +287,7 @@
                                             <button
                                                 type="submit"
                                                 class="link-acao botao-link"
+                                                onclick="return confirm('Deseja alterar o status deste material?');"
                                             >
                                                 {% if composicao.ativo %}
                                                     Inativar
@@ -326,6 +327,158 @@
                 <p>
                     Adicione as matérias-primas utilizadas nesta peça.
                 </p>
+
+                {% if produto.tipo_origem == "FABRICACAO_PROPRIA" %}
+                    <a
+                        href="{% url 'produtos:cadastrar_composicao' produto.id %}"
+                        class="botao botao-principal"
+                    >
+                        Adicionar primeiro material
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </section>
+
+    <section class="card">
+        <div class="detalhe-cabecalho">
+            <div>
+                <h2>Histórico de precificações</h2>
+
+                <p class="texto-secundario">
+                    Últimos cálculos realizados para este produto.
+                </p>
+            </div>
+
+            {% if produto.tipo_origem == "FABRICACAO_PROPRIA" %}
+                <a
+                    href="{% url 'precificacao:calcular_preco_produto' produto.id %}"
+                    class="botao botao-principal"
+                >
+                    + Nova precificação
+                </a>
+            {% endif %}
+        </div>
+
+        {% if produto.tipo_origem == "REVENDA" %}
+            <div class="mensagem mensagem-alerta">
+                Produtos de revenda utilizam o custo unitário de compra.
+            </div>
+
+        {% elif precificacoes %}
+            <div class="tabela-container">
+                <table class="tabela">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Configuração</th>
+                            <th>Materiais</th>
+                            <th>Mão de obra</th>
+                            <th>Custo base</th>
+                            <th>Lucro</th>
+                            <th>Comissão</th>
+                            <th>Impostos</th>
+                            <th>Preço sugerido</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for precificacao in precificacoes %}
+                            <tr>
+                                <td>
+                                    {{ precificacao.data_calculo|date:"d/m/Y H:i" }}
+                                </td>
+
+                                <td>
+                                    {{ precificacao.configuracao.nome }}
+                                </td>
+
+                                <td>
+                                    R$ {{ precificacao.custo_materiais|floatformat:2 }}
+                                </td>
+
+                                <td>
+                                    R$ {{ precificacao.custo_mao_obra|floatformat:2 }}
+                                </td>
+
+                                <td>
+                                    R$ {{ precificacao.custo_base|floatformat:2 }}
+                                </td>
+
+                                <td>
+                                    R$ {{ precificacao.lucro_estimado|floatformat:2 }}
+                                </td>
+
+                                <td>
+                                    R$ {{ precificacao.valor_comissao|floatformat:2 }}
+                                </td>
+
+                                <td>
+                                    R$ {{ precificacao.valor_impostos|floatformat:2 }}
+                                </td>
+
+                                <td>
+                                    <strong>
+                                        R$ {{ precificacao.preco_sugerido|floatformat:2 }}
+                                    </strong>
+
+                                    {% if precificacao.preco_sugerido == produto.preco_padrao %}
+                                        <span class="status status-ativo">
+                                            Preço atual
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <div class="acoes-tabela">
+                                        <a
+                                            href="{% url 'precificacao:detalhe_precificacao' precificacao.pk %}"
+                                            class="link-acao"
+                                        >
+                                            Detalhes
+                                        </a>
+
+                                        <form
+                                            method="post"
+                                            action="{% url 'precificacao:aplicar_preco_sugerido' precificacao.pk %}"
+                                            class="formulario-inline"
+                                        >
+                                            {% csrf_token %}
+
+                                            <button
+                                                type="submit"
+                                                class="link-acao botao-link"
+                                                onclick="return confirm('Aplicar este preço ao produto?');"
+                                            >
+                                                Aplicar
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        {% else %}
+            <div class="estado-vazio estado-vazio-menor">
+                <h3>Nenhuma precificação calculada</h3>
+
+                <p>
+                    Calcule o preço considerando materiais,
+                    mão de obra, custos fixos e margem.
+                </p>
+
+                {% if produto.tipo_origem == "FABRICACAO_PROPRIA" %}
+                    <a
+                        href="{% url 'precificacao:calcular_preco_produto' produto.id %}"
+                        class="botao botao-principal"
+                    >
+                        Calcular primeiro preço
+                    </a>
+                {% endif %}
             </div>
         {% endif %}
     </section>
@@ -534,7 +687,9 @@
                                     {% endif %}
                                 </td>
 
-                                <td>{{ movimentacao.saldo_anterior }}</td>
+                                <td>
+                                    {{ movimentacao.saldo_anterior }}
+                                </td>
 
                                 <td>
                                     <strong>

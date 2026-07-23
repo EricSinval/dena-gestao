@@ -26,4 +26,10 @@ urlpatterns = [
         views.detalhe_precificacao,
         name="detalhe_precificacao",
     ),
+
+    path(
+        "<int:precificacao_id>/aplicar-preco/",
+        views.aplicar_preco_sugerido,
+        name="aplicar_preco_sugerido",
+    ),
 ]
