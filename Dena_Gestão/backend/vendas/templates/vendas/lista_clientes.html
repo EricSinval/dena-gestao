@@ -1,0 +1,150 @@
+{% extends "produtos/base.html" %}
+
+{% block title %}
+    Clientes | Dena Gestão
+{% endblock %}
+
+{% block content %}
+<section class="titulo-pagina">
+    <div>
+        <h1>Clientes</h1>
+        <p>Consulte e gerencie os clientes cadastrados.</p>
+    </div>
+
+    <a
+        href="{% url 'vendas:cadastrar_cliente' %}"
+        class="botao botao-principal"
+    >
+        + Novo cliente
+    </a>
+</section>
+
+<section class="card filtros">
+    <form method="get" class="formulario-filtros">
+        <div class="campo campo-pesquisa">
+            <label for="busca">Pesquisar</label>
+
+            <input
+                type="text"
+                id="busca"
+                name="busca"
+                value="{{ busca }}"
+                placeholder="Nome, telefone ou e-mail"
+                class="form-control"
+            >
+        </div>
+
+        <div class="campo">
+            <label for="status">Status</label>
+
+            <select
+                id="status"
+                name="status"
+                class="form-control"
+            >
+                <option value="">Todos</option>
+
+                <option
+                    value="ativo"
+                    {% if status_selecionado == "ativo" %}
+                        selected
+                    {% endif %}
+                >
+                    Ativos
+                </option>
+
+                <option
+                    value="inativo"
+                    {% if status_selecionado == "inativo" %}
+                        selected
+                    {% endif %}
+                >
+                    Inativos
+                </option>
+            </select>
+        </div>
+
+        <div class="acoes-filtro">
+            <button class="botao botao-principal">
+                Filtrar
+            </button>
+
+            <a
+                href="{% url 'vendas:lista_clientes' %}"
+                class="botao botao-secundario"
+            >
+                Limpar
+            </a>
+        </div>
+    </form>
+</section>
+
+<section class="card tabela-container">
+    {% if clientes %}
+        <table class="tabela">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Telefone</th>
+                    <th>E-mail</th>
+                    <th>Status</th>
+                    <th>Cadastro</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for cliente in clientes %}
+                    <tr>
+                        <td><strong>{{ cliente.nome }}</strong></td>
+                        <td>{{ cliente.telefone }}</td>
+                        <td>{{ cliente.email|default:"—" }}</td>
+
+                        <td>
+                            {% if cliente.ativo %}
+                                <span class="status status-ativo">
+                                    Ativo
+                                </span>
+                            {% else %}
+                                <span class="status status-inativo">
+                                    Inativo
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {{ cliente.data_criacao|date:"d/m/Y" }}
+                        </td>
+
+                        <td>
+                            <div class="acoes-tabela">
+                                <a
+                                    href="{% url 'vendas:detalhe_cliente' cliente.id %}"
+                                    class="link-acao"
+                                >
+                                    Detalhes
+                                </a>
+
+                                <a
+                                    href="{% url 'vendas:editar_cliente' cliente.id %}"
+                                    class="link-acao"
+                                >
+                                    Editar
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="estado-vazio">
+            <h2>Nenhum cliente encontrado</h2>
+
+            <p>
+                Cadastre o primeiro cliente da empresa.
+            </p>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

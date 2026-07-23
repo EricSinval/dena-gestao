@@ -12,6 +12,7 @@ urlpatterns = [
         "precificacao/",
         include("precificacao.urls"),
     ),
+    path("vendas/", include("vendas.urls")),
 ]
 
 if settings.DEBUG:

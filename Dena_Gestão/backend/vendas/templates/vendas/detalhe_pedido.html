@@ -1,0 +1,58 @@
+{% extends "produtos/base.html" %}
+
+{% block title %}
+    {{ pedido.numero_formatado }} | Dena Gestão
+{% endblock %}
+
+{% block content %}
+<section class="titulo-pagina">
+    <div>
+        <a
+            href="{% url 'vendas:lista_pedidos' %}"
+            class="link-voltar"
+        >
+            ← Voltar para pedidos
+        </a>
+
+        <h1>{{ pedido.numero_formatado }}</h1>
+
+        <p>{{ pedido.cliente.nome }}</p>
+    </div>
+</section>
+
+<section class="card">
+    <dl class="lista-detalhes">
+        <div>
+            <dt>Tipo</dt>
+            <dd>{{ pedido.get_tipo_documento_display }}</dd>
+        </div>
+
+        <div>
+            <dt>Status</dt>
+            <dd>{{ pedido.get_status_display }}</dd>
+        </div>
+
+        <div>
+            <dt>Previsão de entrega</dt>
+            <dd>
+                {{ pedido.data_prevista_entrega|date:"d/m/Y"|default:"Não informada" }}
+            </dd>
+        </div>
+
+        <div>
+            <dt>Valor total</dt>
+            <dd>R$ {{ pedido.valor_total|floatformat:2 }}</dd>
+        </div>
+    </dl>
+</section>
+
+<section class="card">
+    <h2>Itens do orçamento/pedido</h2>
+
+    <div class="estado-vazio estado-vazio-menor">
+        <p>
+            O cadastro dos itens será criado na próxima etapa.
+        </p>
+    </div>
+</section>
+{% endblock %}
