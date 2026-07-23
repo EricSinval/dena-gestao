@@ -1,0 +1,95 @@
+{% extends "produtos/base.html" %}
+
+{% block title %}
+    Configurações de precificação | Dena Gestão
+{% endblock %}
+
+{% block content %}
+<section class="titulo-pagina">
+    <div>
+        <h1>Configurações de precificação</h1>
+
+        <p>
+            Parâmetros gerais usados nos cálculos.
+        </p>
+    </div>
+
+    <a
+        href="{% url 'precificacao:cadastrar_configuracao' %}"
+        class="botao botao-principal"
+    >
+        + Nova configuração
+    </a>
+</section>
+
+<section class="card tabela-container">
+    {% if configuracoes %}
+        <table class="tabela">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Salário</th>
+                    <th>Valor/hora</th>
+                    <th>Custos fixos</th>
+                    <th>Custo fixo/peça</th>
+                    <th>Comissão</th>
+                    <th>Impostos</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for configuracao in configuracoes %}
+                    <tr>
+                        <td>{{ configuracao.nome }}</td>
+
+                        <td>
+                            R$ {{ configuracao.salario_mensal|floatformat:2 }}
+                        </td>
+
+                        <td>
+                            R$ {{ configuracao.valor_hora|floatformat:2 }}
+                        </td>
+
+                        <td>
+                            R$ {{ configuracao.custos_fixos_mensais|floatformat:2 }}
+                        </td>
+
+                        <td>
+                            R$ {{ configuracao.custo_fixo_por_peca|floatformat:2 }}
+                        </td>
+
+                        <td>
+                            {{ configuracao.percentual_comissao|floatformat:2 }}%
+                        </td>
+
+                        <td>
+                            {{ configuracao.percentual_impostos|floatformat:2 }}%
+                        </td>
+
+                        <td>
+                            {% if configuracao.ativo %}
+                                <span class="status status-ativo">
+                                    Ativa
+                                </span>
+                            {% else %}
+                                <span class="status status-inativo">
+                                    Inativa
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="estado-vazio">
+            <h2>Nenhuma configuração cadastrada</h2>
+
+            <p>
+                Cadastre os parâmetros antes de calcular preços.
+            </p>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

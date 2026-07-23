@@ -1,0 +1,68 @@
+{% extends "produtos/base.html" %}
+
+{% block title %}
+    Precificar {{ produto.nome }} | Dena Gestão
+{% endblock %}
+
+{% block content %}
+<section class="titulo-pagina">
+    <div>
+        <a
+            href="{% url 'produtos:detalhe_produto' produto.id %}"
+            class="link-voltar"
+        >
+            ← Voltar para {{ produto.nome }}
+        </a>
+
+        <h1>Calcular preço</h1>
+
+        <p>
+            Custo atual dos materiais:
+            <strong>
+                R$ {{ produto.custo_materiais|floatformat:2 }}
+            </strong>
+        </p>
+    </div>
+</section>
+
+<section class="card formulario-card">
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="formulario-grid">
+            {% for campo in formulario %}
+                <div
+                    class="campo
+                    {% if campo.name == 'observacao' %}
+                        campo-completo
+                    {% endif %}
+                    "
+                >
+                    <label for="{{ campo.id_for_label }}">
+                        {{ campo.label }}
+                    </label>
+
+                    {{ campo }}
+
+                    {% for erro in campo.errors %}
+                        <small class="erro">{{ erro }}</small>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="formulario-acoes">
+            <a
+                href="{% url 'produtos:detalhe_produto' produto.id %}"
+                class="botao botao-secundario"
+            >
+                Cancelar
+            </a>
+
+            <button class="botao botao-principal">
+                Calcular preço
+            </button>
+        </div>
+    </form>
+</section>
+{% endblock %}

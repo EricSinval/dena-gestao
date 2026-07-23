@@ -29,6 +29,15 @@
                 Editar
             </a>
 
+            {% if produto.tipo_origem == "FABRICACAO_PROPRIA" %}
+                <a
+                    href="{% url 'precificacao:calcular_preco_produto' produto.id %}"
+                    class="botao botao-principal"
+                >
+                    Calcular preço
+                </a>
+            {% endif %}
+
             <form
                 method="post"
                 action="{% url 'produtos:alterar_status_produto' produto.id %}"
@@ -94,6 +103,11 @@
                 </div>
 
                 <div>
+                    <dt>Origem</dt>
+                    <dd>{{ produto.get_tipo_origem_display }}</dd>
+                </div>
+
+                <div>
                     <dt>Preço padrão</dt>
                     <dd>
                         R$ {{ produto.preco_padrao|floatformat:2 }}
@@ -103,7 +117,7 @@
                 <div>
                     <dt>Custo estimado</dt>
                     <dd>
-                        R$ {{ produto.custo_estimado|floatformat:2 }}
+                        R$ {{ produto.custo_total_estimado|floatformat:2 }}
                     </dd>
                 </div>
 
@@ -400,49 +414,49 @@
                                     {% endif %}
                                 </td>
 
-                            <td>
-                                <div class="acoes-tabela">
-                                    <a
-                                        href="{% url 'produtos:movimentar_estoque' variacao.id %}"
-                                        class="link-acao"
-                                    >
-                                        Movimentar
-                                    </a>
+                                <td>
+                                    <div class="acoes-tabela">
+                                        <a
+                                            href="{% url 'produtos:movimentar_estoque' variacao.id %}"
+                                            class="link-acao"
+                                        >
+                                            Movimentar
+                                        </a>
 
-                                    <a
-                                        href="{% url 'produtos:editar_variacao' variacao.id %}"
-                                        class="link-acao"
-                                    >
-                                        Editar
-                                    </a>
+                                        <a
+                                            href="{% url 'produtos:editar_variacao' variacao.id %}"
+                                            class="link-acao"
+                                        >
+                                            Editar
+                                        </a>
 
-                                    <form
-                                        method="post"
-                                        action="{% url 'produtos:alterar_status_variacao' variacao.id %}"
-                                        class="formulario-inline"
-                                    >
-                                        {% csrf_token %}
+                                        <form
+                                            method="post"
+                                            action="{% url 'produtos:alterar_status_variacao' variacao.id %}"
+                                            class="formulario-inline"
+                                        >
+                                            {% csrf_token %}
 
-                                        {% if variacao.ativo %}
-                                            <button
-                                                type="submit"
-                                                class="link-acao botao-link botao-link-perigo"
-                                                onclick="return confirm('Deseja inativar esta variação?');"
-                                            >
-                                                Inativar
-                                            </button>
-                                        {% else %}
-                                            <button
-                                                type="submit"
-                                                class="link-acao botao-link botao-link-sucesso"
-                                                onclick="return confirm('Deseja reativar esta variação?');"
-                                            >
-                                                Reativar
-                                            </button>
-                                        {% endif %}
-                                    </form>
-                                </div>
-                            </td>
+                                            {% if variacao.ativo %}
+                                                <button
+                                                    type="submit"
+                                                    class="link-acao botao-link botao-link-perigo"
+                                                    onclick="return confirm('Deseja inativar esta variação?');"
+                                                >
+                                                    Inativar
+                                                </button>
+                                            {% else %}
+                                                <button
+                                                    type="submit"
+                                                    class="link-acao botao-link botao-link-sucesso"
+                                                    onclick="return confirm('Deseja reativar esta variação?');"
+                                                >
+                                                    Reativar
+                                                </button>
+                                            {% endif %}
+                                        </form>
+                                    </div>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -465,93 +479,93 @@
             </div>
         {% endif %}
     </section>
-{% endblock %}
 
-<section class="card">
-    <div class="detalhe-cabecalho">
-        <div>
-            <h2>Histórico de estoque</h2>
+    <section class="card">
+        <div class="detalhe-cabecalho">
+            <div>
+                <h2>Histórico de estoque</h2>
 
-            <p class="texto-secundario">
-                Últimas 20 movimentações deste produto.
-            </p>
+                <p class="texto-secundario">
+                    Últimas 20 movimentações deste produto.
+                </p>
+            </div>
         </div>
-    </div>
 
-    {% if movimentacoes %}
-        <div class="tabela-container">
-            <table class="tabela">
-                <thead>
-                    <tr>
-                        <th>Data</th>
-                        <th>SKU</th>
-                        <th>Tipo</th>
-                        <th>Quantidade</th>
-                        <th>Saldo anterior</th>
-                        <th>Saldo resultante</th>
-                        <th>Motivo</th>
-                        <th>Usuário</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {% for movimentacao in movimentacoes %}
+        {% if movimentacoes %}
+            <div class="tabela-container">
+                <table class="tabela">
+                    <thead>
                         <tr>
-                            <td>
-                                {{ movimentacao.data_movimentacao|date:"d/m/Y H:i" }}
-                            </td>
-
-                            <td>
-                                {{ movimentacao.variacao.codigo_sku }}
-                            </td>
-
-                            <td>
-                                {{ movimentacao.get_tipo_display }}
-                            </td>
-
-                            <td>
-                                {% if movimentacao.movimentacao_entrada %}
-                                    <span class="quantidade-entrada">
-                                        +{{ movimentacao.quantidade }}
-                                    </span>
-                                {% else %}
-                                    <span class="quantidade-saida">
-                                        -{{ movimentacao.quantidade }}
-                                    </span>
-                                {% endif %}
-                            </td>
-
-                            <td>{{ movimentacao.saldo_anterior }}</td>
-
-                            <td>
-                                <strong>
-                                    {{ movimentacao.saldo_resultante }}
-                                </strong>
-                            </td>
-
-                            <td>
-                                {{ movimentacao.motivo|default:"—" }}
-                            </td>
-
-                            <td>
-                                {% if movimentacao.usuario %}
-                                    {{ movimentacao.usuario.username }}
-                                {% else %}
-                                    Sistema
-                                {% endif %}
-                            </td>
+                            <th>Data</th>
+                            <th>SKU</th>
+                            <th>Tipo</th>
+                            <th>Quantidade</th>
+                            <th>Saldo anterior</th>
+                            <th>Saldo resultante</th>
+                            <th>Motivo</th>
+                            <th>Usuário</th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% else %}
-        <div class="estado-vazio estado-vazio-menor">
-            <h3>Nenhuma movimentação registrada</h3>
+                    </thead>
 
-            <p>
-                Utilize o botão Movimentar em uma das variações.
-            </p>
-        </div>
-    {% endif %}
-</section>
+                    <tbody>
+                        {% for movimentacao in movimentacoes %}
+                            <tr>
+                                <td>
+                                    {{ movimentacao.data_movimentacao|date:"d/m/Y H:i" }}
+                                </td>
+
+                                <td>
+                                    {{ movimentacao.variacao.codigo_sku }}
+                                </td>
+
+                                <td>
+                                    {{ movimentacao.get_tipo_display }}
+                                </td>
+
+                                <td>
+                                    {% if movimentacao.movimentacao_entrada %}
+                                        <span class="quantidade-entrada">
+                                            +{{ movimentacao.quantidade }}
+                                        </span>
+                                    {% else %}
+                                        <span class="quantidade-saida">
+                                            -{{ movimentacao.quantidade }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>{{ movimentacao.saldo_anterior }}</td>
+
+                                <td>
+                                    <strong>
+                                        {{ movimentacao.saldo_resultante }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {{ movimentacao.motivo|default:"—" }}
+                                </td>
+
+                                <td>
+                                    {% if movimentacao.usuario %}
+                                        {{ movimentacao.usuario.username }}
+                                    {% else %}
+                                        Sistema
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="estado-vazio estado-vazio-menor">
+                <h3>Nenhuma movimentação registrada</h3>
+
+                <p>
+                    Utilize o botão Movimentar em uma das variações.
+                </p>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}

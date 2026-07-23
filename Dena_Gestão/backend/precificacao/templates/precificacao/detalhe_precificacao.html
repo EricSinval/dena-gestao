@@ -1,0 +1,83 @@
+{% extends "produtos/base.html" %}
+
+{% block title %}
+    Resultado da precificação | Dena Gestão
+{% endblock %}
+
+{% block content %}
+<section class="titulo-pagina">
+    <div>
+        <h1>Resultado da precificação</h1>
+
+        <p>{{ precificacao.produto.nome }}</p>
+    </div>
+</section>
+
+<section class="card">
+    <dl class="lista-detalhes">
+        <div>
+            <dt>Custo dos materiais</dt>
+            <dd>
+                R$ {{ precificacao.custo_materiais|floatformat:2 }}
+            </dd>
+        </div>
+
+        <div>
+            <dt>Custo da mão de obra</dt>
+            <dd>
+                R$ {{ precificacao.custo_mao_obra|floatformat:2 }}
+            </dd>
+        </div>
+
+        <div>
+            <dt>Outros custos</dt>
+            <dd>
+                R$ {{ precificacao.outros_custos|floatformat:2 }}
+            </dd>
+        </div>
+
+        <div>
+            <dt>Custo fixo rateado</dt>
+            <dd>
+                R$ {{ precificacao.custo_fixo_rateado|floatformat:2 }}
+            </dd>
+        </div>
+
+        <div>
+            <dt>Custo base</dt>
+            <dd>
+                R$ {{ precificacao.custo_base|floatformat:2 }}
+            </dd>
+        </div>
+
+        <div>
+            <dt>Lucro estimado</dt>
+            <dd>
+                R$ {{ precificacao.lucro_estimado|floatformat:2 }}
+            </dd>
+        </div>
+
+        <div>
+            <dt>Comissão</dt>
+            <dd>
+                R$ {{ precificacao.valor_comissao|floatformat:2 }}
+            </dd>
+        </div>
+
+        <div>
+            <dt>Impostos</dt>
+            <dd>
+                R$ {{ precificacao.valor_impostos|floatformat:2 }}
+            </dd>
+        </div>
+    </dl>
+</section>
+
+<section class="card resultado-preco">
+    <p>Preço sugerido</p>
+
+    <strong>
+        R$ {{ precificacao.preco_sugerido|floatformat:2 }}
+    </strong>
+</section>
+{% endblock %}

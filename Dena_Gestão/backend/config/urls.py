@@ -8,6 +8,10 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("produtos/", include("produtos.urls")),
     path("insumos/", include("insumos.urls")),
+    path(
+        "precificacao/",
+        include("precificacao.urls"),
+    ),
 ]
 
 if settings.DEBUG:
