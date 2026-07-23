@@ -5,12 +5,14 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from .forms import (
+    ComposicaoProdutoForm,
     MovimentacaoEstoqueForm,
     ProdutoForm,
     VariacaoProdutoForm,
 )
 from .models import (
     Categoria,
+    ComposicaoProduto,
     MovimentacaoEstoque,
     Produto,
     VariacaoProduto,
@@ -18,7 +20,9 @@ from .models import (
 
 
 def lista_produtos(request):
-    produtos = Produto.objects.select_related("categoria").all()
+    produtos = Produto.objects.select_related(
+        "categoria",
+    ).all()
 
     busca = request.GET.get("busca", "").strip()
     categoria_id = request.GET.get("categoria", "").strip()
@@ -32,14 +36,25 @@ def lista_produtos(request):
         )
 
     if categoria_id:
-        produtos = produtos.filter(categoria_id=categoria_id)
+        produtos = produtos.filter(
+            categoria_id=categoria_id,
+        )
 
     if status == "ativo":
-        produtos = produtos.filter(ativo=True)
-    elif status == "inativo":
-        produtos = produtos.filter(ativo=False)
+        produtos = produtos.filter(
+            ativo=True,
+        )
 
-    categorias = Categoria.objects.filter(ativo=True).order_by("nome")
+    elif status == "inativo":
+        produtos = produtos.filter(
+            ativo=False,
+        )
+
+    categorias = Categoria.objects.filter(
+        ativo=True,
+    ).order_by(
+        "nome",
+    )
 
     contexto = {
         "produtos": produtos,
@@ -68,10 +83,15 @@ def cadastrar_produto(request):
 
             messages.success(
                 request,
-                f'O produto "{produto.nome}" foi cadastrado com sucesso.',
+                (
+                    f'O produto "{produto.nome}" '
+                    "foi cadastrado com sucesso."
+                ),
             )
 
-            return redirect("produtos:lista_produtos")
+            return redirect(
+                "produtos:lista_produtos",
+            )
 
     else:
         formulario = ProdutoForm()
@@ -91,26 +111,54 @@ def cadastrar_produto(request):
 
 def detalhe_produto(request, produto_id):
     produto = get_object_or_404(
-        Produto.objects.select_related("categoria").prefetch_related(
+        Produto.objects.select_related(
+            "categoria",
+        ).prefetch_related(
             "variacoes",
             "variacoes__movimentacoes",
+            "composicoes",
+            "composicoes__materia_prima",
+            "composicoes__materia_prima__categoria",
         ),
         id=produto_id,
     )
 
+    variacoes = produto.variacoes.order_by(
+        "cor",
+        "tamanho",
+        "modelo",
+    )
+
+    movimentacoes = (
+        MovimentacaoEstoque.objects
+        .filter(
+            variacao__produto=produto,
+        )
+        .select_related(
+            "variacao",
+            "usuario",
+        )
+        .order_by(
+            "-data_movimentacao",
+        )[:20]
+    )
+
+    composicoes = (
+        produto.composicoes
+        .select_related(
+            "materia_prima",
+            "materia_prima__categoria",
+        )
+        .order_by(
+            "materia_prima__nome",
+        )
+    )
+
     contexto = {
         "produto": produto,
-        "variacoes": produto.variacoes.order_by(
-            "cor",
-            "tamanho",
-            "modelo",
-        ),
-        "movimentacoes": (
-            MovimentacaoEstoque.objects
-            .filter(variacao__produto=produto)
-            .select_related("variacao", "usuario")
-            .order_by("-data_movimentacao")[:20]
-        ),
+        "variacoes": variacoes,
+        "movimentacoes": movimentacoes,
+        "composicoes": composicoes,
     }
 
     return render(
@@ -138,7 +186,10 @@ def editar_produto(request, produto_id):
 
             messages.success(
                 request,
-                f'O produto "{produto.nome}" foi atualizado com sucesso.',
+                (
+                    f'O produto "{produto.nome}" '
+                    "foi atualizado com sucesso."
+                ),
             )
 
             return redirect(
@@ -182,9 +233,16 @@ def alterar_status_produto(request, produto_id):
     )
 
     if produto.ativo:
-        mensagem = f'O produto "{produto.nome}" foi reativado.'
+        mensagem = (
+            f'O produto "{produto.nome}" '
+            "foi reativado."
+        )
+
     else:
-        mensagem = f'O produto "{produto.nome}" foi inativado.'
+        mensagem = (
+            f'O produto "{produto.nome}" '
+            "foi inativado."
+        )
 
     messages.success(
         request,
@@ -226,8 +284,12 @@ def cadastrar_variacao(request, produto_id):
                         "com o mesmo tamanho, cor e modelo."
                     ),
                 )
+
             else:
-                variacao = formulario.save(commit=False)
+                variacao = formulario.save(
+                    commit=False,
+                )
+
                 variacao.produto = produto
                 variacao.save()
 
@@ -263,7 +325,9 @@ def cadastrar_variacao(request, produto_id):
 
 def editar_variacao(request, variacao_id):
     variacao = get_object_or_404(
-        VariacaoProduto.objects.select_related("produto"),
+        VariacaoProduto.objects.select_related(
+            "produto",
+        ),
         id=variacao_id,
     )
 
@@ -312,7 +376,9 @@ def editar_variacao(request, variacao_id):
 @require_POST
 def alterar_status_variacao(request, variacao_id):
     variacao = get_object_or_404(
-        VariacaoProduto.objects.select_related("produto"),
+        VariacaoProduto.objects.select_related(
+            "produto",
+        ),
         id=variacao_id,
     )
 
@@ -326,9 +392,16 @@ def alterar_status_variacao(request, variacao_id):
     )
 
     if variacao.ativo:
-        mensagem = f'A variação "{variacao}" foi reativada.'
+        mensagem = (
+            f'A variação "{variacao}" '
+            "foi reativada."
+        )
+
     else:
-        mensagem = f'A variação "{variacao}" foi inativada.'
+        mensagem = (
+            f'A variação "{variacao}" '
+            "foi inativada."
+        )
 
     messages.success(
         request,
@@ -339,6 +412,7 @@ def alterar_status_variacao(request, variacao_id):
         "produtos:detalhe_produto",
         produto_id=variacao.produto.id,
     )
+
 
 def movimentar_estoque(request, variacao_id):
     variacao_visualizada = get_object_or_404(
@@ -370,24 +444,34 @@ def movimentar_estoque(request, variacao_id):
                 variacao = (
                     VariacaoProduto.objects
                     .select_for_update()
-                    .select_related("produto")
-                    .get(id=variacao_id)
+                    .select_related(
+                        "produto",
+                    )
+                    .get(
+                        id=variacao_id,
+                    )
                 )
 
                 saldo_anterior = variacao.quantidade_estoque
 
                 if tipo in tipos_entrada:
-                    saldo_resultante = saldo_anterior + quantidade
+                    saldo_resultante = (
+                        saldo_anterior
+                        + quantidade
+                    )
 
                 else:
-                    saldo_resultante = saldo_anterior - quantidade
+                    saldo_resultante = (
+                        saldo_anterior
+                        - quantidade
+                    )
 
                     if saldo_resultante < 0:
                         formulario.add_error(
                             "quantidade",
                             (
-                                "A quantidade informada é maior que "
-                                "o estoque disponível."
+                                "A quantidade informada é maior "
+                                "que o estoque disponível."
                             ),
                         )
 
@@ -408,6 +492,7 @@ def movimentar_estoque(request, variacao_id):
                     )
 
                     variacao.quantidade_estoque = saldo_resultante
+
                     variacao.save(
                         update_fields=[
                             "quantidade_estoque",
@@ -441,4 +526,150 @@ def movimentar_estoque(request, variacao_id):
         request,
         "produtos/movimentar_estoque.html",
         contexto,
+    )
+
+
+def cadastrar_composicao(request, produto_id):
+    produto = get_object_or_404(
+        Produto,
+        id=produto_id,
+    )
+
+    if request.method == "POST":
+        formulario = ComposicaoProdutoForm(
+            request.POST,
+            produto=produto,
+        )
+
+        if formulario.is_valid():
+            composicao = formulario.save(
+                commit=False,
+            )
+
+            composicao.produto = produto
+            composicao.save()
+
+            messages.success(
+                request,
+                (
+                    'A matéria-prima '
+                    f'"{composicao.materia_prima.nome}" '
+                    "foi adicionada à composição."
+                ),
+            )
+
+            return redirect(
+                "produtos:detalhe_produto",
+                produto_id=produto.id,
+            )
+
+    else:
+        formulario = ComposicaoProdutoForm(
+            produto=produto,
+        )
+
+    contexto = {
+        "formulario": formulario,
+        "produto": produto,
+        "titulo": "Adicionar matéria-prima",
+        "texto_botao": "Adicionar à composição",
+    }
+
+    return render(
+        request,
+        "produtos/formulario_composicao.html",
+        contexto,
+    )
+
+
+def editar_composicao(request, composicao_id):
+    composicao = get_object_or_404(
+        ComposicaoProduto.objects.select_related(
+            "produto",
+            "materia_prima",
+        ),
+        id=composicao_id,
+    )
+
+    if request.method == "POST":
+        formulario = ComposicaoProdutoForm(
+            request.POST,
+            instance=composicao,
+            produto=composicao.produto,
+        )
+
+        if formulario.is_valid():
+            composicao = formulario.save()
+
+            messages.success(
+                request,
+                "Item da composição atualizado.",
+            )
+
+            return redirect(
+                "produtos:detalhe_produto",
+                produto_id=composicao.produto.id,
+            )
+
+    else:
+        formulario = ComposicaoProdutoForm(
+            instance=composicao,
+            produto=composicao.produto,
+        )
+
+    contexto = {
+        "formulario": formulario,
+        "produto": composicao.produto,
+        "composicao": composicao,
+        "titulo": "Editar matéria-prima",
+        "texto_botao": "Salvar alterações",
+    }
+
+    return render(
+        request,
+        "produtos/formulario_composicao.html",
+        contexto,
+    )
+
+
+@require_POST
+def alterar_status_composicao(
+    request,
+    composicao_id,
+):
+    composicao = get_object_or_404(
+        ComposicaoProduto.objects.select_related(
+            "produto",
+            "materia_prima",
+        ),
+        id=composicao_id,
+    )
+
+    composicao.ativo = not composicao.ativo
+
+    composicao.save(
+        update_fields=[
+            "ativo",
+            "data_atualizacao",
+        ]
+    )
+
+    if composicao.ativo:
+        acao = "reativado"
+
+    else:
+        acao = "inativado"
+
+    messages.success(
+        request,
+        (
+            'O material '
+            f'"{composicao.materia_prima.nome}" '
+            f"foi {acao} na composição."
+        ),
+    )
+
+    return redirect(
+        "produtos:detalhe_produto",
+        produto_id=composicao.produto.id,
     )

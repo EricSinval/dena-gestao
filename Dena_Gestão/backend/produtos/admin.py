@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from .models import (
     Categoria,
+    ComposicaoProduto,
     MovimentacaoEstoque,
     Produto,
     VariacaoProduto,
@@ -30,13 +31,19 @@ class VariacaoProdutoInline(admin.TabularInline):
     extra = 1
 
 
+class ComposicaoProdutoInline(admin.TabularInline):
+    model = ComposicaoProduto
+    extra = 1
+
+
 @admin.register(Produto)
 class ProdutoAdmin(admin.ModelAdmin):
     list_display = (
         "nome",
         "categoria",
+        "tipo_origem",
         "preco_padrao",
-        "custo_estimado",
+        "exibir_custo_total_estimado",
         "possui_bordado",
         "personalizado",
         "ativo",
@@ -44,6 +51,7 @@ class ProdutoAdmin(admin.ModelAdmin):
 
     list_filter = (
         "categoria",
+        "tipo_origem",
         "possui_bordado",
         "personalizado",
         "ativo",
@@ -56,7 +64,14 @@ class ProdutoAdmin(admin.ModelAdmin):
 
     inlines = [
         VariacaoProdutoInline,
+        ComposicaoProdutoInline,
     ]
+
+    @admin.display(
+        description="Custo total estimado",
+    )
+    def exibir_custo_total_estimado(self, produto):
+        return f"R$ {produto.custo_total_estimado:.2f}"
 
 
 @admin.register(VariacaoProduto)
@@ -92,7 +107,44 @@ class VariacaoProdutoAdmin(admin.ModelAdmin):
     )
     def exibir_estoque_baixo(self, variacao):
         return variacao.estoque_baixo
-    
+
+
+@admin.register(ComposicaoProduto)
+class ComposicaoProdutoAdmin(admin.ModelAdmin):
+    list_display = (
+        "produto",
+        "materia_prima",
+        "quantidade_utilizada",
+        "percentual_perda",
+        "exibir_quantidade_com_perda",
+        "exibir_custo_calculado",
+        "ativo",
+    )
+
+    list_filter = (
+        "ativo",
+        "materia_prima__categoria",
+    )
+
+    search_fields = (
+        "produto__nome",
+        "materia_prima__nome",
+        "observacao",
+    )
+
+    @admin.display(
+        description="Quantidade com perda",
+    )
+    def exibir_quantidade_com_perda(self, composicao):
+        return f"{composicao.quantidade_com_perda:.3f}"
+
+    @admin.display(
+        description="Custo calculado",
+    )
+    def exibir_custo_calculado(self, composicao):
+        return f"R$ {composicao.custo_calculado:.2f}"
+
+
 @admin.register(MovimentacaoEstoque)
 class MovimentacaoEstoqueAdmin(admin.ModelAdmin):
     list_display = (

@@ -168,6 +168,157 @@
     <section class="card">
         <div class="detalhe-cabecalho">
             <div>
+                <h2>Composição do produto</h2>
+
+                <p class="texto-secundario">
+                    Matérias-primas utilizadas na fabricação.
+                </p>
+            </div>
+
+            {% if produto.tipo_origem == "FABRICACAO_PROPRIA" %}
+                <a
+                    href="{% url 'produtos:cadastrar_composicao' produto.id %}"
+                    class="botao botao-principal"
+                >
+                    + Adicionar material
+                </a>
+            {% endif %}
+        </div>
+
+        {% if produto.tipo_origem == "REVENDA" %}
+            <div class="mensagem mensagem-alerta">
+                Produtos de revenda não utilizam ficha de composição.
+            </div>
+
+        {% elif composicoes %}
+            <div class="tabela-container">
+                <table class="tabela">
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th>Unidade</th>
+                            <th>Quantidade</th>
+                            <th>Perda</th>
+                            <th>Quantidade final</th>
+                            <th>Custo médio</th>
+                            <th>Custo calculado</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for composicao in composicoes %}
+                            <tr>
+                                <td>
+                                    <strong>
+                                        {{ composicao.materia_prima.nome }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {{ composicao.materia_prima.get_unidade_medida_display }}
+                                </td>
+
+                                <td>
+                                    {{ composicao.quantidade_utilizada|floatformat:3 }}
+                                </td>
+
+                                <td>
+                                    {{ composicao.percentual_perda|floatformat:2 }}%
+                                </td>
+
+                                <td>
+                                    {{ composicao.quantidade_com_perda|floatformat:3 }}
+                                </td>
+
+                                <td>
+                                    R$ {{ composicao.materia_prima.custo_unitario|floatformat:4 }}
+                                </td>
+
+                                <td>
+                                    <strong>
+                                        R$ {{ composicao.custo_calculado|floatformat:2 }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {% if composicao.ativo %}
+                                        <span class="status status-ativo">
+                                            Ativa
+                                        </span>
+                                    {% else %}
+                                        <span class="status status-inativo">
+                                            Inativa
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <div class="acoes-tabela">
+                                        <a
+                                            href="{% url 'produtos:editar_composicao' composicao.id %}"
+                                            class="link-acao"
+                                        >
+                                            Editar
+                                        </a>
+
+                                        <form
+                                            method="post"
+                                            action="{% url 'produtos:alterar_status_composicao' composicao.id %}"
+                                            class="formulario-inline"
+                                        >
+                                            {% csrf_token %}
+
+                                            <button
+                                                type="submit"
+                                                class="link-acao botao-link"
+                                            >
+                                                {% if composicao.ativo %}
+                                                    Inativar
+                                                {% else %}
+                                                    Reativar
+                                                {% endif %}
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+
+                    <tfoot>
+                        <tr>
+                            <td colspan="6">
+                                <strong>
+                                    Custo total dos materiais
+                                </strong>
+                            </td>
+
+                            <td colspan="3">
+                                <strong>
+                                    R$ {{ produto.custo_materiais|floatformat:2 }}
+                                </strong>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+        {% else %}
+            <div class="estado-vazio estado-vazio-menor">
+                <h3>Nenhum material adicionado</h3>
+
+                <p>
+                    Adicione as matérias-primas utilizadas nesta peça.
+                </p>
+            </div>
+        {% endif %}
+    </section>
+
+    <section class="card">
+        <div class="detalhe-cabecalho">
+            <div>
                 <h2>Variações</h2>
 
                 <p class="texto-secundario">

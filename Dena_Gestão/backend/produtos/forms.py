@@ -1,6 +1,15 @@
+from decimal import Decimal
+
 from django import forms
 
-from .models import MovimentacaoEstoque, Produto, VariacaoProduto
+from insumos.models import MateriaPrima
+
+from .models import (
+    ComposicaoProduto,
+    MovimentacaoEstoque,
+    Produto,
+    VariacaoProduto,
+)
 
 
 class ProdutoForm(forms.ModelForm):
@@ -178,3 +187,108 @@ class MovimentacaoEstoqueForm(forms.Form):
             }
         ),
     )
+
+
+class ComposicaoProdutoForm(forms.ModelForm):
+    quantidade_utilizada = forms.DecimalField(
+        min_value=Decimal("0.001"),
+        max_digits=12,
+        decimal_places=3,
+        localize=True,
+        label="Quantidade utilizada",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "inputmode": "decimal",
+                "placeholder": "0,000",
+            }
+        ),
+    )
+
+    percentual_perda = forms.DecimalField(
+        min_value=Decimal("0.00"),
+        max_digits=5,
+        decimal_places=2,
+        localize=True,
+        label="Perda prevista (%)",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "inputmode": "decimal",
+                "placeholder": "0,00",
+            }
+        ),
+    )
+
+    class Meta:
+        model = ComposicaoProduto
+
+        fields = [
+            "materia_prima",
+            "quantidade_utilizada",
+            "percentual_perda",
+            "observacao",
+            "ativo",
+        ]
+
+        widgets = {
+            "materia_prima": forms.Select(
+                attrs={
+                    "class": "form-control",
+                }
+            ),
+            "observacao": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Ex.: tecido principal da peça",
+                }
+            ),
+            "ativo": forms.CheckboxInput(
+                attrs={
+                    "class": "form-check-input",
+                }
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        produto = kwargs.pop("produto", None)
+
+        super().__init__(*args, **kwargs)
+
+        self.produto = produto
+
+        self.fields["materia_prima"].queryset = (
+            MateriaPrima.objects
+            .filter(ativo=True)
+            .select_related("categoria")
+            .order_by(
+                "categoria__nome",
+                "nome",
+            )
+        )
+
+    def clean_materia_prima(self):
+        materia_prima = self.cleaned_data["materia_prima"]
+
+        if self.produto is None:
+            return materia_prima
+
+        consulta = ComposicaoProduto.objects.filter(
+            produto=self.produto,
+            materia_prima=materia_prima,
+        )
+
+        if self.instance and self.instance.pk:
+            consulta = consulta.exclude(
+                pk=self.instance.pk,
+            )
+
+        if consulta.exists():
+            raise forms.ValidationError(
+                (
+                    "Essa matéria-prima já faz parte "
+                    "da composição deste produto."
+                )
+            )
+
+        return materia_prima

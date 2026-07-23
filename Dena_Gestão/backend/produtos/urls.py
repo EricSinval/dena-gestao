@@ -52,4 +52,20 @@ urlpatterns = [
         views.movimentar_estoque,
         name="movimentar_estoque",
     ),
+
+    path(
+    "<int:produto_id>/composicao/cadastrar/",
+    views.cadastrar_composicao,
+    name="cadastrar_composicao",
+    ),
+    path(
+        "composicao/<int:composicao_id>/editar/",
+        views.editar_composicao,
+        name="editar_composicao",
+    ),
+    path(
+        "composicao/<int:composicao_id>/alterar-status/",
+        views.alterar_status_composicao,
+        name="alterar_status_composicao",
+    ),
 ]
